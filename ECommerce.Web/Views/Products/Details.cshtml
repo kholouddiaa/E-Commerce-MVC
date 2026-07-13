@@ -1,0 +1,36 @@
+@model ProductDto
+@{
+    ViewData["Title"] = "Product Details";
+}
+
+<div class="page-header">
+    <div>
+        <h1>Product Details</h1>
+        <p class="text-muted mb-0">Review product information.</p>
+    </div>
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+        <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+    </div>
+</div>
+
+<div class="card card-shadow border-0">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Name</dt>
+            <dd class="col-sm-9">@Model.Name</dd>
+
+            <dt class="col-sm-3">Category</dt>
+            <dd class="col-sm-9">@Model.CategoryName</dd>
+
+            <dt class="col-sm-3">Price</dt>
+            <dd class="col-sm-9">@Model.Price.ToString("C")</dd>
+
+            <dt class="col-sm-3">Stock Quantity</dt>
+            <dd class="col-sm-9">@Model.StockQuantity</dd>
+
+            <dt class="col-sm-3">Description</dt>
+            <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.Description) ? "No description provided." : Model.Description)</dd>
+        </dl>
+    </div>
+</div>

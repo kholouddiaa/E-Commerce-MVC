@@ -1,0 +1,44 @@
+html {
+  font-size: 14px;
+  position: relative;
+  min-height: 100%;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+body {
+  margin-bottom: 60px;
+  background-color: #f7f9fc;
+}
+
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-select:focus {
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.2);
+}
+
+.table-actions {
+  white-space: nowrap;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.page-header h1 {
+  margin-bottom: 0;
+}
+
+.card-shadow {
+  box-shadow: 0 0.5rem 1rem rgba(15, 23, 42, 0.08);
+}

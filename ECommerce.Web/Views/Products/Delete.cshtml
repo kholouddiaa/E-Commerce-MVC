@@ -1,0 +1,34 @@
+@model ProductDto
+@{
+    ViewData["Title"] = "Delete Product";
+}
+
+<div class="page-header">
+    <div>
+        <h1>Delete Product</h1>
+        <p class="text-muted mb-0">Confirm before removing this product.</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="card border-danger card-shadow">
+    <div class="card-body">
+        <div class="alert alert-warning">
+            This action will permanently delete <strong>@Model.Name</strong>.
+        </div>
+
+        <dl class="row">
+            <dt class="col-sm-3">Category</dt>
+            <dd class="col-sm-9">@Model.CategoryName</dd>
+
+            <dt class="col-sm-3">Price</dt>
+            <dd class="col-sm-9">@Model.Price.ToString("C")</dd>
+        </dl>
+
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="btn btn-danger">Delete</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,31 @@
+@model CategoryDto
+@{
+    ViewData["Title"] = "Delete Category";
+}
+
+<div class="page-header">
+    <div>
+        <h1>Delete Category</h1>
+        <p class="text-muted mb-0">Confirm before removing this category.</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="card border-danger card-shadow">
+    <div class="card-body">
+        <div class="alert alert-warning">
+            This action will permanently delete <strong>@Model.Name</strong> if it has no related products.
+        </div>
+
+        <dl class="row">
+            <dt class="col-sm-3">Description</dt>
+            <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.Description) ? "No description provided." : Model.Description)</dd>
+        </dl>
+
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="btn btn-danger">Delete</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+        </form>
+    </div>
+</div>

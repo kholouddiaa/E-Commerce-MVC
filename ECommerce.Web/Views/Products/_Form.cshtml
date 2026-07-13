@@ -1,0 +1,47 @@
+@model ProductFormViewModel
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+<input asp-for="Product.Id" type="hidden" />
+
+<div class="mb-3">
+    <label asp-for="Product.Name" class="form-label"></label>
+    <input asp-for="Product.Name" class="form-control" />
+    <span asp-validation-for="Product.Name" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Product.Description" class="form-label"></label>
+    <textarea asp-for="Product.Description" class="form-control" rows="4"></textarea>
+    <span asp-validation-for="Product.Description" class="text-danger"></span>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <label asp-for="Product.Price" class="form-label"></label>
+        <input asp-for="Product.Price" class="form-control" />
+        <span asp-validation-for="Product.Price" class="text-danger"></span>
+    </div>
+    <div class="col-md-4 mb-3">
+        <label asp-for="Product.StockQuantity" class="form-label"></label>
+        <input asp-for="Product.StockQuantity" class="form-control" />
+        <span asp-validation-for="Product.StockQuantity" class="text-danger"></span>
+    </div>
+    <div class="col-md-4 mb-3">
+        <label asp-for="Product.CategoryId" class="form-label"></label>
+        @if (!Model.HasCategories)
+        {
+            <div class="alert alert-warning mb-3">
+                No categories are available yet. Create a category first, then return to create the product.
+                <a asp-controller="Categories" asp-action="Create" class="alert-link">Create Category</a>
+            </div>
+        }
+        <select asp-for="Product.CategoryId"
+                asp-items="Model.Categories.Select(category => new SelectListItem(category.Text, category.Value, category.Selected))"
+                class="form-select"
+                disabled="@(!Model.HasCategories)">
+            <option value="">Select a category</option>
+        </select>
+        <span asp-validation-for="Product.CategoryId" class="text-danger"></span>
+    </div>
+</div>

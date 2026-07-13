@@ -1,0 +1,25 @@
+@model ProductFormViewModel
+@{
+    ViewData["Title"] = "Create Product";
+}
+
+<div class="page-header">
+    <div>
+        <h1>Create Product</h1>
+        <p class="text-muted mb-0">Add a product using the business layer.</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="card card-shadow border-0">
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+            <partial name="_Form" model="Model" />
+            <button type="submit" class="btn btn-primary" disabled="@(!Model.HasCategories)">Save</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
