@@ -4,15 +4,31 @@ using ECommerce.BLL.DTOs.Categories;
 using ECommerce.BLL.Services.Interfaces;
 using ECommerce.DAL.Entities;
 using ECommerce.DAL.UnitOfWork.Interfaces;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace ECommerce.BLL.Services;
 
-public class CategoryService(IUnitOfWork unitOfWork, IMapper mapper) : ICategoryService
+public class CategoryService(
+    IUnitOfWork unitOfWork,
+    IMapper mapper,
+    IMemoryCache memoryCache) : ICategoryService
 {
+    private const string CategoriesCacheKey = "categories";
+
     public async Task<IReadOnlyList<CategoryDto>> GetAllAsync()
     {
+        if (memoryCache.TryGetValue(CategoriesCacheKey, out IReadOnlyList<CategoryDto>? cachedCategories) &&
+            cachedCategories is not null)
+        {
+            return cachedCategories;
+        }
+
         var categories = await unitOfWork.Categories.GetAllAsync();
-        return mapper.Map<IReadOnlyList<CategoryDto>>(categories);
+        var mappedCategories = mapper.Map<IReadOnlyList<CategoryDto>>(categories);
+
+        memoryCache.Set(CategoriesCacheKey, mappedCategories, TimeSpan.FromMinutes(30));
+
+        return mappedCategories;
     }
 
     public async Task<CategoryDto?> GetByIdAsync(int id)
@@ -40,6 +56,7 @@ public class CategoryService(IUnitOfWork unitOfWork, IMapper mapper) : ICategory
 
         await unitOfWork.Categories.AddAsync(category);
         await unitOfWork.SaveChangesAsync();
+        InvalidateCategoriesCache();
 
         return OperationResult.Success();
     }
@@ -63,6 +80,7 @@ public class CategoryService(IUnitOfWork unitOfWork, IMapper mapper) : ICategory
 
         unitOfWork.Categories.Update(existingCategory);
         await unitOfWork.SaveChangesAsync();
+        InvalidateCategoriesCache();
 
         return OperationResult.Success();
     }
@@ -82,7 +100,13 @@ public class CategoryService(IUnitOfWork unitOfWork, IMapper mapper) : ICategory
 
         unitOfWork.Categories.Delete(category);
         await unitOfWork.SaveChangesAsync();
+        InvalidateCategoriesCache();
 
         return OperationResult.Success();
+    }
+
+    private void InvalidateCategoriesCache()
+    {
+        memoryCache.Remove(CategoriesCacheKey);
     }
 }

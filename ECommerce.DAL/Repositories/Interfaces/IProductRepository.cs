@@ -6,5 +6,16 @@ public interface IProductRepository : IGenericRepository<Product>
 {
     Task<IReadOnlyList<Product>> GetAllWithCategoryAsync();
 
+    Task<(IReadOnlyList<Product> Items, int TotalItems, int CurrentPage)> GetPagedWithCategoryAsync(
+        string? searchTerm,
+        int? categoryId,
+        string sortOrder,
+        int pageNumber,
+        int pageSize);
+
     Task<Product?> GetByIdWithCategoryAsync(int id);
+
+    Task<int> GetTotalCountAsync();
+
+    Task<IReadOnlyDictionary<int, int>> GetCategoryProductCountsAsync();
 }

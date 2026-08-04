@@ -1,9 +1,11 @@
 @using ECommerce.BLL.Services.Interfaces
 @inject ICategoryService CategoryService
+@inject ICartService CartService
 @inject IProductService ProductService
 @{
     var categories = await CategoryService.GetAllAsync();
-    var productCount = (await ProductService.GetAllAsync()).Count;
+    var cartItemCount = CartService.GetCart().Sum(item => item.Quantity);
+    var productCount = await ProductService.GetTotalCountAsync();
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
     var isHome = string.Equals(currentController, "Home", StringComparison.OrdinalIgnoreCase);
@@ -13,6 +15,7 @@
         && string.Equals(currentAction, "Details", StringComparison.OrdinalIgnoreCase);
     var isPublicCategories = string.Equals(currentController, "Categories", StringComparison.OrdinalIgnoreCase)
         && string.Equals(currentAction, "Index", StringComparison.OrdinalIgnoreCase);
+    var isCart = string.Equals(currentController, "Cart", StringComparison.OrdinalIgnoreCase);
     var isUserManagement = string.Equals(currentController, "UserManagement", StringComparison.OrdinalIgnoreCase);
     var isProductAdmin = string.Equals(currentController, "Products", StringComparison.OrdinalIgnoreCase)
         && new[] { "Admin", "Create", "Edit", "Delete" }
@@ -58,6 +61,10 @@
                     <a asp-controller="Categories" asp-action="Index" class="btn border ml-2">
                         <i class="fas fa-tags text-primary"></i>
                         <span class="badge">@categories.Count</span>
+                    </a>
+                    <a asp-controller="Cart" asp-action="Index" class="btn border ml-2">
+                        <i class="fas fa-shopping-cart text-primary"></i>
+                        <span class="badge">@cartItemCount</span>
                     </a>
                 </div>
             </div>
@@ -115,6 +122,7 @@
                             <a asp-controller="Home" asp-action="Index" class="nav-item nav-link @(isHome ? "active" : string.Empty)">Home</a>
                             <a asp-controller="Products" asp-action="Index" class="nav-item nav-link @((isPublicProducts || isProductDetails) ? "active" : string.Empty)">Shop</a>
                             <a asp-controller="Categories" asp-action="Index" class="nav-item nav-link @(isPublicCategories ? "active" : string.Empty)">Categories</a>
+                            <a asp-controller="Cart" asp-action="Index" class="nav-item nav-link @(isCart ? "active" : string.Empty)">Cart</a>
                             @if (showCatalogManagementUi)
                             {
                                 <a asp-controller="Products" asp-action="Admin" class="nav-item nav-link @(isProductAdmin ? "active" : string.Empty)">Manage Products</a>
@@ -177,6 +185,7 @@
                             <a asp-controller="Home" asp-action="Index"><i class="fa fa-angle-right mr-2"></i>Home</a>
                             <a asp-controller="Products" asp-action="Index"><i class="fa fa-angle-right mr-2"></i>Our Shop</a>
                             <a asp-controller="Categories" asp-action="Index"><i class="fa fa-angle-right mr-2"></i>Categories</a>
+                            <a asp-controller="Cart" asp-action="Index"><i class="fa fa-angle-right mr-2"></i>Shopping Cart</a>
                             @if (showCatalogManagementUi)
                             {
                                 <a asp-controller="Products" asp-action="Admin"><i class="fa fa-angle-right mr-2"></i>Manage Products</a>
@@ -190,6 +199,7 @@
                         <div class="footer-links">
                             <a asp-controller="Products" asp-action="Index"><i class="fa fa-angle-right mr-2"></i>Browse Products</a>
                             <a asp-controller="Categories" asp-action="Index"><i class="fa fa-angle-right mr-2"></i>Browse Categories</a>
+                            <a asp-controller="Cart" asp-action="Index"><i class="fa fa-angle-right mr-2"></i>View Cart</a>
                             <a asp-controller="Home" asp-action="Index"><i class="fa fa-angle-right mr-2"></i>Back To Home</a>
                             @if (showCatalogManagementUi)
                             {
@@ -204,6 +214,7 @@
                         <div class="border p-4 bg-white h-100">
                             <p class="mb-2"><strong>Products:</strong> @productCount</p>
                             <p class="mb-2"><strong>Categories:</strong> @categories.Count</p>
+                            <p class="mb-2"><strong>Cart Items:</strong> @cartItemCount</p>
                             <p class="mb-0">The storefront automatically updates whenever you add or edit data from the admin pages.</p>
                         </div>
                     </div>

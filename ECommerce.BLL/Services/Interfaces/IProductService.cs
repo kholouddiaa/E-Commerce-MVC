@@ -1,5 +1,6 @@
 using ECommerce.BLL.Common;
 using ECommerce.BLL.DTOs.Products;
+using Microsoft.AspNetCore.Http;
 
 namespace ECommerce.BLL.Services.Interfaces;
 
@@ -7,13 +8,19 @@ public interface IProductService
 {
     Task<IReadOnlyList<ProductDto>> GetAllAsync();
 
+    Task<PagedResult<ProductDto>> GetPagedAsync(ProductQueryParameters queryParameters);
+
     Task<ProductDto?> GetByIdAsync(int id);
 
     Task<ProductUpsertDto?> GetForEditAsync(int id);
 
-    Task<OperationResult> CreateAsync(ProductUpsertDto productDto);
+    Task<int> GetTotalCountAsync();
 
-    Task<OperationResult> UpdateAsync(ProductUpsertDto productDto);
+    Task<IReadOnlyDictionary<int, int>> GetCategoryProductCountsAsync();
+
+    Task<OperationResult> CreateAsync(ProductUpsertDto productDto, IFormFile? imageFile);
+
+    Task<OperationResult> UpdateAsync(ProductUpsertDto productDto, IFormFile? imageFile);
 
     Task<OperationResult> DeleteAsync(int id);
 }

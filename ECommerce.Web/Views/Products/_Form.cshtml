@@ -32,8 +32,8 @@
            required="@Model.RequiresImage" />
     <small class="form-text text-muted">
         @(Model.RequiresImage
-            ? "Upload a product image. JPG, PNG, and WEBP files are supported."
-            : "Leave this empty to keep the current image, or upload a new JPG, PNG, or WEBP file.")
+            ? "Upload a product image up to 2 MB. JPG, JPEG, PNG, and WEBP files are supported."
+            : "Leave this empty to keep the current image, or upload a new image up to 2 MB in JPG, JPEG, PNG, or WEBP format.")
     </small>
     <span asp-validation-for="ImageFile" class="text-danger"></span>
 </div>

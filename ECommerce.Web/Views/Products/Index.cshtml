@@ -23,6 +23,8 @@
                 <div class="category-quick-list">
                     <a asp-action="Index"
                        asp-route-searchTerm="@Model.SearchTerm"
+                       asp-route-sortOrder="@Model.SortOrder"
+                       asp-route-pageSize="@Model.PageSize"
                        class="category-quick-link @(Model.CategoryId is null ? "active-filter" : string.Empty)">
                         <span>All Categories</span>
                         <span>@Model.Categories.Sum(category => category.ProductCount)</span>
@@ -32,6 +34,8 @@
                         <a asp-action="Index"
                            asp-route-categoryId="@category.Id"
                            asp-route-searchTerm="@Model.SearchTerm"
+                           asp-route-sortOrder="@Model.SortOrder"
+                           asp-route-pageSize="@Model.PageSize"
                            class="category-quick-link @(Model.CategoryId == category.Id ? "active-filter" : string.Empty)">
                             <span>@category.Name</span>
                             <span>@category.ProductCount</span>
@@ -56,25 +60,42 @@
                 <div class="col-12 pb-1">
                     <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap">
                         <form asp-action="Index" method="get" class="mb-3 mb-md-0 flex-grow-1 mr-md-3">
-                            <div class="input-group">
-                                <input type="text"
-                                       name="searchTerm"
-                                       value="@Model.SearchTerm"
-                                       class="form-control"
-                                       placeholder="Search by product, description, or category">
-                                @if (Model.CategoryId.HasValue)
-                                {
-                                    <input type="hidden" name="categoryId" value="@Model.CategoryId" />
-                                }
-                                <div class="input-group-append">
-                                    <button type="submit" class="input-group-text bg-transparent text-primary border-0">
-                                        <i class="fa fa-search"></i>
-                                    </button>
+                            @if (Model.CategoryId.HasValue)
+                            {
+                                <input type="hidden" name="categoryId" value="@Model.CategoryId" />
+                            }
+                            <input type="hidden" name="pageSize" value="@Model.PageSize" />
+
+                            <div class="row align-items-center">
+                                <div class="col-lg-6 mb-3 mb-lg-0">
+                                    <div class="input-group">
+                                        <input type="text"
+                                               name="searchTerm"
+                                               value="@Model.SearchTerm"
+                                               class="form-control"
+                                               placeholder="Search by product name or description">
+                                        <div class="input-group-append">
+                                            <button type="submit" class="input-group-text bg-transparent text-primary border-0">
+                                                <i class="fa fa-search"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-6 mb-3 mb-md-0">
+                                    <select name="sortOrder" class="form-control" onchange="this.form.submit()">
+                                        <option value="@ProductSortOrder.NameAscending" selected="@(Model.SortOrder == ProductSortOrder.NameAscending)">Name A-Z</option>
+                                        <option value="@ProductSortOrder.NameDescending" selected="@(Model.SortOrder == ProductSortOrder.NameDescending)">Name Z-A</option>
+                                        <option value="@ProductSortOrder.PriceAscending" selected="@(Model.SortOrder == ProductSortOrder.PriceAscending)">Price Low to High</option>
+                                        <option value="@ProductSortOrder.PriceDescending" selected="@(Model.SortOrder == ProductSortOrder.PriceDescending)">Price High to Low</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-3 col-md-6">
+                                    <button type="submit" class="btn btn-outline-primary btn-block">Apply</button>
                                 </div>
                             </div>
                         </form>
                         <div class="d-flex align-items-center mb-3 mb-md-0">
-                            <span class="mr-3 text-muted">@Model.Products.Count product(s)</span>
+                            <span class="mr-3 text-muted">@Model.TotalItems product(s)</span>
                             @if (Model.HasFilters)
                             {
                                 <a asp-action="Index" class="btn btn-outline-secondary">Clear Filters</a>
@@ -107,6 +128,69 @@
                                 <a asp-controller="Categories" asp-action="Index" class="btn btn-primary">Browse Categories</a>
                             </div>
                         </div>
+                    </div>
+                }
+
+                @if (Model.TotalPages > 1)
+                {
+                    <div class="col-12 pt-4">
+                        <nav aria-label="Product pagination">
+                            <ul class="pagination justify-content-center mb-0">
+                                <li class="page-item @(Model.HasPreviousPage ? string.Empty : "disabled")">
+                                    @if (Model.HasPreviousPage)
+                                    {
+                                        <a class="page-link"
+                                           asp-action="Index"
+                                           asp-route-searchTerm="@Model.SearchTerm"
+                                           asp-route-categoryId="@Model.CategoryId"
+                                           asp-route-sortOrder="@Model.SortOrder"
+                                           asp-route-pageNumber="@(Model.CurrentPage - 1)"
+                                           asp-route-pageSize="@Model.PageSize">Previous</a>
+                                    }
+                                    else
+                                    {
+                                        <span class="page-link">Previous</span>
+                                    }
+                                </li>
+
+                                @for (var pageNumber = 1; pageNumber <= Model.TotalPages; pageNumber++)
+                                {
+                                    <li class="page-item @(pageNumber == Model.CurrentPage ? "active" : string.Empty)">
+                                        @if (pageNumber == Model.CurrentPage)
+                                        {
+                                            <span class="page-link">@pageNumber</span>
+                                        }
+                                        else
+                                        {
+                                            <a class="page-link"
+                                               asp-action="Index"
+                                               asp-route-searchTerm="@Model.SearchTerm"
+                                               asp-route-categoryId="@Model.CategoryId"
+                                               asp-route-sortOrder="@Model.SortOrder"
+                                               asp-route-pageNumber="@pageNumber"
+                                               asp-route-pageSize="@Model.PageSize">@pageNumber</a>
+                                        }
+                                    </li>
+                                }
+
+                                <li class="page-item @(Model.HasNextPage ? string.Empty : "disabled")">
+                                    @if (Model.HasNextPage)
+                                    {
+                                        <a class="page-link"
+                                           asp-action="Index"
+                                           asp-route-searchTerm="@Model.SearchTerm"
+                                           asp-route-categoryId="@Model.CategoryId"
+                                           asp-route-sortOrder="@Model.SortOrder"
+                                           asp-route-pageNumber="@(Model.CurrentPage + 1)"
+                                           asp-route-pageSize="@Model.PageSize">Next</a>
+                                    }
+                                    else
+                                    {
+                                        <span class="page-link">Next</span>
+                                    }
+                                </li>
+                            </ul>
+                        </nav>
                     </div>
                 }
             </div>

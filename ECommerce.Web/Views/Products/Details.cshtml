@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = Model.Product.Name;
     ViewData["ProductCardColumnClass"] = "col-lg-3 col-md-6 col-sm-12 pb-1";
+    var returnUrl = $"{Context.Request.PathBase}{Context.Request.Path}{Context.Request.QueryString}";
 }
 
 <div class="container-fluid bg-secondary mb-5">
@@ -42,6 +43,16 @@
             </div>
 
             <div class="dashboard-actions">
+                @if (Model.Product.StockQuantity > 0)
+                {
+                    <form asp-controller="Cart" asp-action="Add" method="post" class="d-inline-block">
+                        <input type="hidden" name="id" value="@Model.Product.Id" />
+                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-shopping-cart mr-2"></i>Add To Cart
+                        </button>
+                    </form>
+                }
                 <a asp-action="Index" class="btn btn-outline-primary">Back To Shop</a>
                 <a asp-action="Index" asp-route-categoryId="@Model.Product.CategoryId" class="btn btn-outline-secondary">More In @Model.Product.CategoryName</a>
                 <a asp-controller="Categories" asp-action="Index" class="btn btn-outline-secondary">Browse Categories</a>

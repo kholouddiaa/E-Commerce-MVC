@@ -6,17 +6,20 @@ public class OperationResult
 
     public string? ErrorMessage { get; init; }
 
+    public string? ErrorPropertyName { get; init; }
+
     public static OperationResult Success()
     {
         return new OperationResult { Succeeded = true };
     }
 
-    public static OperationResult Failure(string errorMessage)
+    public static OperationResult Failure(string errorMessage, string? errorPropertyName = null)
     {
         return new OperationResult
         {
             Succeeded = false,
-            ErrorMessage = errorMessage
+            ErrorMessage = errorMessage,
+            ErrorPropertyName = errorPropertyName
         };
     }
 }

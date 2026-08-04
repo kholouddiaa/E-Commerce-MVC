@@ -14,6 +14,13 @@ public static class StorefrontViewModelFactory
             .GroupBy(product => product.CategoryId)
             .ToDictionary(group => group.Key, group => group.Count());
 
+        return BuildCategories(categories, productCounts);
+    }
+
+    public static IReadOnlyList<StoreCategoryViewModel> BuildCategories(
+        IReadOnlyList<CategoryDto> categories,
+        IReadOnlyDictionary<int, int> productCounts)
+    {
         return categories
             .Select(category => new StoreCategoryViewModel
             {
