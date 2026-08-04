@@ -35,9 +35,15 @@ public class ProductService(IUnitOfWork unitOfWork, IMapper mapper) : IProductSe
             return OperationResult.Failure("The selected category is invalid.");
         }
 
+        if (string.IsNullOrWhiteSpace(productDto.ImageUrl))
+        {
+            return OperationResult.Failure("A product image is required.");
+        }
+
         var product = mapper.Map<Product>(productDto);
         product.Name = product.Name.Trim();
         product.Description = product.Description?.Trim();
+        product.ImageUrl = product.ImageUrl?.Trim();
 
         await unitOfWork.Products.AddAsync(product);
         await unitOfWork.SaveChangesAsync();
@@ -59,9 +65,15 @@ public class ProductService(IUnitOfWork unitOfWork, IMapper mapper) : IProductSe
             return OperationResult.Failure("The selected category is invalid.");
         }
 
+        if (string.IsNullOrWhiteSpace(productDto.ImageUrl))
+        {
+            return OperationResult.Failure("A product image is required.");
+        }
+
         mapper.Map(productDto, existingProduct);
         existingProduct.Name = existingProduct.Name.Trim();
         existingProduct.Description = existingProduct.Description?.Trim();
+        existingProduct.ImageUrl = existingProduct.ImageUrl?.Trim();
 
         unitOfWork.Products.Update(existingProduct);
         await unitOfWork.SaveChangesAsync();

@@ -1,0 +1,203 @@
+@model UserManagementIndexViewModel
+@{
+    ViewData["Title"] = "User Management";
+}
+
+<div class="container-fluid py-5">
+    <div class="row px-xl-5">
+        <div class="col-12">
+            <div class="page-header">
+                <div>
+                    <h1>User Management</h1>
+                    <p class="text-muted mb-0">Manage account roles and access without changing the existing Identity architecture.</p>
+                </div>
+                <div class="dashboard-actions">
+                    <a asp-controller="Products" asp-action="Admin" class="btn btn-outline-secondary">Manage Products</a>
+                    <a asp-controller="Categories" asp-action="Admin" class="btn btn-outline-secondary">Manage Categories</a>
+                </div>
+            </div>
+
+            <div class="card card-shadow border-0">
+                <div class="card-body">
+                    <form asp-action="Index" method="get" class="row align-items-end mb-4">
+                        <div class="col-lg-5 col-md-7 mb-3">
+                            <label for="searchTerm" class="form-label">Search Users</label>
+                            <input id="searchTerm"
+                                   name="searchTerm"
+                                   value="@Model.SearchTerm"
+                                   class="form-control"
+                                   placeholder="Search by username, email, or full name" />
+                        </div>
+                        <div class="col-lg-4 col-md-5 mb-3">
+                            <button type="submit" class="btn btn-primary mr-2">Search</button>
+                            @if (!string.IsNullOrWhiteSpace(Model.SearchTerm))
+                            {
+                                <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+                            }
+                        </div>
+                        <div class="col-lg-3 col-md-12 mb-3 text-md-right">
+                            <span class="text-muted">Total Users: @Model.TotalUsers</span>
+                        </div>
+                    </form>
+
+                    @if (!Model.Users.Any())
+                    {
+                        <div class="empty-state">
+                            <p>No users matched the current filter.</p>
+                            @if (!string.IsNullOrWhiteSpace(Model.SearchTerm))
+                            {
+                                <a asp-action="Index" class="btn btn-outline-secondary">Show All Users</a>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Current Role</th>
+                                        <th>Lock Status</th>
+                                        <th class="table-actions">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var user in Model.Users)
+                                    {
+                                        <tr class="@(user.IsCurrentUser ? "table-warning" : string.Empty)">
+                                            <td>
+                                                <div class="font-weight-semi-bold">@user.UserName</div>
+                                                @if (user.IsCurrentUser)
+                                                {
+                                                    <small class="text-muted">Current signed-in admin</small>
+                                                }
+                                            </td>
+                                            <td>@user.Email</td>
+                                            <td>
+                                                @if (user.IsAdmin)
+                                                {
+                                                    <span class="badge badge-primary">Admin</span>
+                                                }
+                                                else if (user.IsCustomer)
+                                                {
+                                                    <span class="badge badge-info">Customer</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-secondary">@user.CurrentRole</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (user.IsLocked)
+                                                {
+                                                    <span class="badge badge-danger">@user.LockStatus</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-success">@user.LockStatus</span>
+                                                }
+                                            </td>
+                                            <td class="table-actions">
+                                                @if (user.IsAdmin)
+                                                {
+                                                    @if (user.IsCurrentUser)
+                                                    {
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-outline-primary mr-1 mb-1"
+                                                                disabled>
+                                                            Demote
+                                                        </button>
+                                                    }
+                                                    else
+                                                    {
+                                                        <form asp-action="DemoteToCustomer" method="post" class="d-inline-block mr-1 mb-1">
+                                                            <input type="hidden" name="id" value="@user.Id" />
+                                                            <input type="hidden" name="searchTerm" value="@Model.SearchTerm" />
+                                                            <input type="hidden" name="page" value="@Model.CurrentPage" />
+                                                            <button type="submit" class="btn btn-sm btn-outline-primary">Demote</button>
+                                                        </form>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <form asp-action="PromoteToAdmin" method="post" class="d-inline-block mr-1 mb-1">
+                                                        <input type="hidden" name="id" value="@user.Id" />
+                                                        <input type="hidden" name="searchTerm" value="@Model.SearchTerm" />
+                                                        <input type="hidden" name="page" value="@Model.CurrentPage" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-primary">Promote</button>
+                                                    </form>
+                                                }
+
+                                                @if (user.IsLocked)
+                                                {
+                                                    <form asp-action="Unlock" method="post" class="d-inline-block mr-1 mb-1">
+                                                        <input type="hidden" name="id" value="@user.Id" />
+                                                        <input type="hidden" name="searchTerm" value="@Model.SearchTerm" />
+                                                        <input type="hidden" name="page" value="@Model.CurrentPage" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-success">Unlock</button>
+                                                    </form>
+                                                }
+                                                else
+                                                {
+                                                    <form asp-action="Lock" method="post" class="d-inline-block mr-1 mb-1">
+                                                        <input type="hidden" name="id" value="@user.Id" />
+                                                        <input type="hidden" name="searchTerm" value="@Model.SearchTerm" />
+                                                        <input type="hidden" name="page" value="@Model.CurrentPage" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-warning" disabled="@user.IsCurrentUser">Lock</button>
+                                                    </form>
+                                                }
+
+                                                <form asp-action="Delete"
+                                                      method="post"
+                                                      class="d-inline-block mb-1"
+                                                      onsubmit="return confirm('Delete this user account?');">
+                                                    <input type="hidden" name="id" value="@user.Id" />
+                                                    <input type="hidden" name="searchTerm" value="@Model.SearchTerm" />
+                                                    <input type="hidden" name="page" value="@Model.CurrentPage" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" disabled="@user.IsCurrentUser">Delete</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        @if (Model.TotalPages > 1)
+                        {
+                            <nav aria-label="User pagination" class="mt-4">
+                                <ul class="pagination justify-content-center mb-0">
+                                    <li class="page-item @(Model.HasPreviousPage ? string.Empty : "disabled")">
+                                        <a class="page-link"
+                                           asp-action="Index"
+                                           asp-route-searchTerm="@Model.SearchTerm"
+                                           asp-route-page="@(Model.CurrentPage - 1)">Previous</a>
+                                    </li>
+
+                                    @for (var pageNumber = 1; pageNumber <= Model.TotalPages; pageNumber++)
+                                    {
+                                        <li class="page-item @(pageNumber == Model.CurrentPage ? "active" : string.Empty)">
+                                            <a class="page-link"
+                                               asp-action="Index"
+                                               asp-route-searchTerm="@Model.SearchTerm"
+                                               asp-route-page="@pageNumber">@pageNumber</a>
+                                        </li>
+                                    }
+
+                                    <li class="page-item @(Model.HasNextPage ? string.Empty : "disabled")">
+                                        <a class="page-link"
+                                           asp-action="Index"
+                                           asp-route-searchTerm="@Model.SearchTerm"
+                                           asp-route-page="@(Model.CurrentPage + 1)">Next</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

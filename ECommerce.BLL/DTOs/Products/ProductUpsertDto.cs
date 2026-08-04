@@ -15,6 +15,10 @@ public class ProductUpsertDto
     [Display(Name = "Description")]
     public string? Description { get; set; }
 
+    [StringLength(500)]
+    [Display(Name = "Image")]
+    public string? ImageUrl { get; set; }
+
     [Range(typeof(decimal), "0.01", "999999999.99")]
     [Display(Name = "Price")]
     public decimal Price { get; set; }

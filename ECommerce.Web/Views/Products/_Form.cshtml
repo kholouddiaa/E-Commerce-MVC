@@ -3,6 +3,7 @@
 
 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 <input asp-for="Product.Id" type="hidden" />
+<input asp-for="Product.ImageUrl" type="hidden" />
 
 <div class="mb-3">
     <label asp-for="Product.Name" class="form-label"></label>
@@ -14,6 +15,27 @@
     <label asp-for="Product.Description" class="form-label"></label>
     <textarea asp-for="Product.Description" class="form-control" rows="4"></textarea>
     <span asp-validation-for="Product.Description" class="text-danger"></span>
+</div>
+
+<div class="mb-4">
+    <label asp-for="ImageFile" class="form-label"></label>
+    @if (!string.IsNullOrWhiteSpace(Model.Product.ImageUrl))
+    {
+        <div class="mb-3">
+            <img src="@Model.Product.ImageUrl" alt="@Model.Product.Name" class="img-thumbnail" style="max-width: 220px;" />
+        </div>
+    }
+    <input asp-for="ImageFile"
+           type="file"
+           class="form-control"
+           accept=".jpg,.jpeg,.png,.webp"
+           required="@Model.RequiresImage" />
+    <small class="form-text text-muted">
+        @(Model.RequiresImage
+            ? "Upload a product image. JPG, PNG, and WEBP files are supported."
+            : "Leave this empty to keep the current image, or upload a new JPG, PNG, or WEBP file.")
+    </small>
+    <span asp-validation-for="ImageFile" class="text-danger"></span>
 </div>
 
 <div class="row">
@@ -38,7 +60,7 @@
         }
         <select asp-for="Product.CategoryId"
                 asp-items="Model.Categories.Select(category => new SelectListItem(category.Text, category.Value, category.Selected))"
-                class="form-select"
+                class="form-control"
                 disabled="@(!Model.HasCategories)">
             <option value="">Select a category</option>
         </select>

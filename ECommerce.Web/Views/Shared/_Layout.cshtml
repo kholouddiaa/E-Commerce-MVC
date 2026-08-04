@@ -1,49 +1,236 @@
-﻿<!DOCTYPE html>
+@using ECommerce.BLL.Services.Interfaces
+@inject ICategoryService CategoryService
+@inject IProductService ProductService
+@{
+    var categories = await CategoryService.GetAllAsync();
+    var productCount = (await ProductService.GetAllAsync()).Count;
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+    var isHome = string.Equals(currentController, "Home", StringComparison.OrdinalIgnoreCase);
+    var isPublicProducts = string.Equals(currentController, "Products", StringComparison.OrdinalIgnoreCase)
+        && string.Equals(currentAction, "Index", StringComparison.OrdinalIgnoreCase);
+    var isProductDetails = string.Equals(currentController, "Products", StringComparison.OrdinalIgnoreCase)
+        && string.Equals(currentAction, "Details", StringComparison.OrdinalIgnoreCase);
+    var isPublicCategories = string.Equals(currentController, "Categories", StringComparison.OrdinalIgnoreCase)
+        && string.Equals(currentAction, "Index", StringComparison.OrdinalIgnoreCase);
+    var isUserManagement = string.Equals(currentController, "UserManagement", StringComparison.OrdinalIgnoreCase);
+    var isProductAdmin = string.Equals(currentController, "Products", StringComparison.OrdinalIgnoreCase)
+        && new[] { "Admin", "Create", "Edit", "Delete" }
+            .Any(action => string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase));
+    var isCategoryAdmin = string.Equals(currentController, "Categories", StringComparison.OrdinalIgnoreCase)
+        && new[] { "Admin", "Create", "Edit", "Delete", "Details" }
+            .Any(action => string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase));
+    var isAdminUser = User.IsInRole("Admin");
+    var showCatalogManagementUi = isAdminUser;
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - E-Commerce MVC</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <title>@ViewData["Title"] - EShopper MVC</title>
+    <link href="~/eshopper/img/favicon.ico" rel="icon" asp-append-version="true" />
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/eshopper/lib/owlcarousel/assets/owl.carousel.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/eshopper/css/style.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/ECommerce.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
-            <div class="container">
-                <a class="navbar-brand fw-semibold" asp-area="" asp-controller="Products" asp-action="Index">E-Commerce MVC</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse">
-                    <ul class="navbar-nav me-auto">
-                        <li class="nav-item">
-                            <a class="nav-link text-white" asp-area="" asp-controller="Products" asp-action="Index">Products</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-white" asp-area="" asp-controller="Categories" asp-action="Index">Categories</a>
-                        </li>
-                    </ul>
+    <div class="container-fluid">
+        <div class="row bg-secondary py-2 px-xl-5">
+            <div class="col-lg-6 d-none d-lg-block">
+                @* <div class="d-inline-flex align-items-center">
+                    <span class="text-dark">Real MVC storefront</span>
+                    <span class="text-muted px-2">|</span>
+                    <span class="text-dark">Data-driven catalog</span>
+                    <span class="text-muted px-2">|</span>
+                    <span class="text-dark">Admin ready</span>
+                </div> *@
+            </div>
+            <div class="col-lg-6 text-center text-lg-right">
+                <div class="d-inline-flex align-items-center">
+                    <a asp-controller="Products" asp-action="Index" class="btn border">
+                        <i class="fas fa-store text-primary"></i>
+                        <span class="badge">@productCount</span>
+                    </a>
+                    <a asp-controller="Categories" asp-action="Index" class="btn border ml-2">
+                        <i class="fas fa-tags text-primary"></i>
+                        <span class="badge">@categories.Count</span>
+                    </a>
                 </div>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        @await Html.PartialAsync("_Alerts")
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+        </div>
+        <div class="row align-items-center py-3 px-xl-5">
+            <div class="col-lg-3 d-none d-lg-block">
+                <a asp-controller="Home" asp-action="Index" class="text-decoration-none">
+                    <h1 class="m-0 display-5 font-weight-semi-bold">
+                        <span class="text-primary font-weight-bold border px-3 mr-1">E</span>Shopper
+                    </h1>
+                </a>
+            </div>
+            <div class="col-lg-6 col-6 text-left">
+                <form asp-controller="Products" asp-action="Index" method="get">
+                    <div class="input-group">
+                        <input type="text" name="searchTerm" class="form-control" placeholder="Search for products">
+                        <div class="input-group-append">
+                            <button type="submit" class="input-group-text bg-transparent text-primary border-0">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-lg-3 col-6 text-right">
+                @if (showCatalogManagementUi)
+                {
+                    <a asp-controller="Products" asp-action="Create" class="btn border">
+                        <i class="fas fa-plus text-primary"></i>
+                        <span class="badge">Product</span>
+                    </a>
+                    <a asp-controller="Categories" asp-action="Create" class="btn border ml-2">
+                        <i class="fas fa-folder-plus text-primary"></i>
+                        <span class="badge">Category</span>
+                    </a>
+                }
+            </div>
+        </div>
     </div>
 
-    <footer class="border-top footer text-muted bg-white">
-        <div class="container">
-            &copy; 2026 - E-Commerce MVC
+    <div class="container-fluid">
+        <div class="row border-top px-xl-5">
+            <div class="col-lg-12">
+                <nav class="navbar navbar-expand-lg bg-light navbar-light py-3 py-lg-0 px-0">
+                    <a asp-controller="Home" asp-action="Index" class="text-decoration-none d-block d-lg-none">
+                        <h1 class="m-0 display-5 font-weight-semi-bold">
+                            <span class="text-primary font-weight-bold border px-3 mr-1">E</span>Shopper
+                        </h1>
+                    </a>
+                    <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
+                        <div class="navbar-nav mr-auto py-0">
+                            <a asp-controller="Home" asp-action="Index" class="nav-item nav-link @(isHome ? "active" : string.Empty)">Home</a>
+                            <a asp-controller="Products" asp-action="Index" class="nav-item nav-link @((isPublicProducts || isProductDetails) ? "active" : string.Empty)">Shop</a>
+                            <a asp-controller="Categories" asp-action="Index" class="nav-item nav-link @(isPublicCategories ? "active" : string.Empty)">Categories</a>
+                            @if (showCatalogManagementUi)
+                            {
+                                <a asp-controller="Products" asp-action="Admin" class="nav-item nav-link @(isProductAdmin ? "active" : string.Empty)">Manage Products</a>
+                                <a asp-controller="Categories" asp-action="Admin" class="nav-item nav-link @(isCategoryAdmin ? "active" : string.Empty)">Manage Categories</a>
+                                <a asp-controller="UserManagement" asp-action="Index" class="nav-item nav-link @(isUserManagement ? "active" : string.Empty)">User Management</a>
+                            }
+                        </div>
+                        <div class="navbar-nav ml-auto py-0">
+                            @if (showCatalogManagementUi)
+                            {
+                                <a asp-controller="Products" asp-action="Create" class="nav-item nav-link">Add Product</a>
+                                <a asp-controller="Categories" asp-action="Create" class="nav-item nav-link">Add Category</a>
+                            }
+
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                <span class="nav-item nav-link text-muted">Hello, @User.Identity.Name</span>
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-flex align-items-center">
+                                    <button type="submit" class="btn btn-link nav-item nav-link border-0 p-0">Logout</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <a asp-controller="Account" asp-action="Register" class="nav-item nav-link">Register</a>
+                                <a asp-controller="Account" asp-action="Login" class="nav-item nav-link">Login</a>
+                            }
+                        </div>
+                    </div>
+                </nav>
+            </div>
         </div>
-    </footer>
+    </div>
+
+    <div class="container-fluid px-xl-5 pt-3 store-alerts">
+        @await Html.PartialAsync("_Alerts")
+    </div>
+
+    <main role="main">
+        @RenderBody()
+    </main>
+
+    <div class="container-fluid bg-secondary text-dark mt-5 pt-5">
+        <div class="row px-xl-5 pt-5">
+            <div class="col-lg-4 col-md-12 mb-5 pr-3 pr-xl-5">
+                <a asp-controller="Home" asp-action="Index" class="text-decoration-none">
+                    <h1 class="mb-4 display-5 font-weight-semi-bold">
+                        <span class="text-primary font-weight-bold border border-white px-3 mr-1">E</span>Shopper
+                    </h1>
+                </a>
+                <p>This storefront is now connected to your ASP.NET Core MVC catalog, so the UI looks like a real e-commerce site while still using your current data and CRUD flow.</p>
+                <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>Catalog managed from your MVC app</p>
+                <p class="mb-2"><i class="fa fa-envelope text-primary mr-3"></i>storefront@local.mvc</p>
+                <p class="mb-0"><i class="fa fa-phone-alt text-primary mr-3"></i>Ready for next features</p>
+            </div>
+            <div class="col-lg-8 col-md-12">
+                <div class="row">
+                    <div class="col-md-4 mb-5">
+                        <h5 class="font-weight-bold text-dark mb-4">Store</h5>
+                        <div class="footer-links">
+                            <a asp-controller="Home" asp-action="Index"><i class="fa fa-angle-right mr-2"></i>Home</a>
+                            <a asp-controller="Products" asp-action="Index"><i class="fa fa-angle-right mr-2"></i>Our Shop</a>
+                            <a asp-controller="Categories" asp-action="Index"><i class="fa fa-angle-right mr-2"></i>Categories</a>
+                            @if (showCatalogManagementUi)
+                            {
+                                <a asp-controller="Products" asp-action="Admin"><i class="fa fa-angle-right mr-2"></i>Manage Products</a>
+                                <a asp-controller="Categories" asp-action="Admin"><i class="fa fa-angle-right mr-2"></i>Manage Categories</a>
+                                <a asp-controller="UserManagement" asp-action="Index"><i class="fa fa-angle-right mr-2"></i>User Management</a>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-5">
+                        <h5 class="font-weight-bold text-dark mb-4">Quick Actions</h5>
+                        <div class="footer-links">
+                            <a asp-controller="Products" asp-action="Index"><i class="fa fa-angle-right mr-2"></i>Browse Products</a>
+                            <a asp-controller="Categories" asp-action="Index"><i class="fa fa-angle-right mr-2"></i>Browse Categories</a>
+                            <a asp-controller="Home" asp-action="Index"><i class="fa fa-angle-right mr-2"></i>Back To Home</a>
+                            @if (showCatalogManagementUi)
+                            {
+                                <a asp-controller="Products" asp-action="Create"><i class="fa fa-angle-right mr-2"></i>Create Product</a>
+                                <a asp-controller="Categories" asp-action="Create"><i class="fa fa-angle-right mr-2"></i>Create Category</a>
+                                <a asp-controller="UserManagement" asp-action="Index"><i class="fa fa-angle-right mr-2"></i>Open User Management</a>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-5">
+                        <h5 class="font-weight-bold text-dark mb-4">Catalog Summary</h5>
+                        <div class="border p-4 bg-white h-100">
+                            <p class="mb-2"><strong>Products:</strong> @productCount</p>
+                            <p class="mb-2"><strong>Categories:</strong> @categories.Count</p>
+                            <p class="mb-0">The storefront automatically updates whenever you add or edit data from the admin pages.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row border-top border-light mx-xl-5 py-4">
+            <div class="col-md-6 px-xl-0">
+                <p class="mb-md-0 text-center text-md-left text-dark">
+                    &copy; @DateTime.Now.Year <span class="font-weight-semi-bold">E-Commerce MVC</span>. Frontend adapted from your EShopper template.
+                </p>
+            </div>
+            <div class="col-md-6 px-xl-0 text-center text-md-right">
+                <img class="img-fluid" src="~/eshopper/img/payments.png" asp-append-version="true" alt="Payments">
+            </div>
+        </div>
+    </div>
+
+    <a href="#" class="btn btn-primary back-to-top"><i class="fa fa-angle-double-up"></i></a>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
+    <script src="~/eshopper/lib/easing/easing.min.js" asp-append-version="true"></script>
+    <script src="~/eshopper/lib/owlcarousel/owl.carousel.min.js" asp-append-version="true"></script>
+    <script src="~/eshopper/mail/jqBootstrapValidation.min.js" asp-append-version="true"></script>
+    <script src="~/eshopper/mail/contact.js" asp-append-version="true"></script>
+    <script src="~/eshopper/js/main.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

@@ -1,12 +1,25 @@
 using ECommerce.BLL.DTOs.Categories;
 using ECommerce.BLL.Services.Interfaces;
+using ECommerce.Web.Helpers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.Web.Controllers;
 
-public class CategoriesController(ICategoryService categoryService) : Controller
+[Authorize(Policy = AuthorizationPolicies.AdminOnly)]
+public class CategoriesController(ICategoryService categoryService, IProductService productService) : Controller
 {
+    [AllowAnonymous]
     public async Task<IActionResult> Index()
+    {
+        var categories = await categoryService.GetAllAsync();
+        var products = await productService.GetAllAsync();
+        var model = StorefrontViewModelFactory.BuildCategories(categories, products);
+
+        return View(model);
+    }
+
+    public async Task<IActionResult> Admin()
     {
         var categories = await categoryService.GetAllAsync();
         return View(categories);
@@ -40,7 +53,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
         }
 
         TempData["SuccessMessage"] = "Category created successfully.";
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Admin));
     }
 
     public async Task<IActionResult> Edit(int id)
@@ -71,7 +84,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
         }
 
         TempData["SuccessMessage"] = "Category updated successfully.";
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Admin));
     }
 
     public async Task<IActionResult> Delete(int id)
@@ -88,10 +101,10 @@ public class CategoriesController(ICategoryService categoryService) : Controller
         if (!result.Succeeded)
         {
             TempData["ErrorMessage"] = result.ErrorMessage ?? "Unable to delete the category.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Admin));
         }
 
         TempData["SuccessMessage"] = "Category deleted successfully.";
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Admin));
     }
 }

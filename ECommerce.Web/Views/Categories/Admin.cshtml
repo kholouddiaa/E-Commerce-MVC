@@ -1,0 +1,62 @@
+@model IReadOnlyList<CategoryDto>
+@{
+    ViewData["Title"] = "Manage Categories";
+}
+
+<div class="container-fluid py-5">
+    <div class="row px-xl-5">
+        <div class="col-12">
+            <div class="page-header">
+                <div>
+                    <h1>Manage Categories</h1>
+                    <p class="text-muted mb-0">Keep category CRUD separate from the public storefront page.</p>
+                </div>
+                <div class="dashboard-actions">
+                    <a asp-action="Index" class="btn btn-outline-primary">View Public Categories</a>
+                    <a asp-controller="Products" asp-action="Admin" class="btn btn-outline-secondary">Product Admin</a>
+                    <a asp-action="Create" class="btn btn-primary">Create Category</a>
+                </div>
+            </div>
+
+            <div class="card card-shadow border-0">
+                <div class="card-body">
+                    @if (!Model.Any())
+                    {
+                        <div class="empty-state">
+                            <p>No categories have been created yet.</p>
+                            <a asp-action="Create" class="btn btn-primary">Create Category</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th class="table-actions">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var category in Model)
+                                    {
+                                        <tr>
+                                            <td>@category.Name</td>
+                                            <td>@(string.IsNullOrWhiteSpace(category.Description) ? "No description provided." : category.Description)</td>
+                                            <td class="table-actions">
+                                                <a asp-action="Details" asp-route-id="@category.Id" class="btn btn-sm btn-outline-secondary">Details</a>
+                                                <a asp-action="Edit" asp-route-id="@category.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                                                <a asp-action="Delete" asp-route-id="@category.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

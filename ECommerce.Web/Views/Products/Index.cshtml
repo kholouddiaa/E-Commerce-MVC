@@ -1,53 +1,115 @@
-@model IReadOnlyList<ProductDto>
+@model StorefrontCatalogViewModel
 @{
-    ViewData["Title"] = "Products";
+    ViewData["Title"] = "Shop";
+    ViewData["ProductCardColumnClass"] = "col-lg-4 col-md-6 col-sm-12 pb-1";
 }
 
-<div class="page-header">
-    <div>
-        <h1>Products</h1>
-        <p class="text-muted mb-0">Manage products through the business service layer.</p>
+<div class="container-fluid bg-secondary mb-5">
+    <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 300px">
+        <h1 class="font-weight-semi-bold text-uppercase mb-3">Our Shop</h1>
+        <div class="d-inline-flex">
+            <p class="m-0"><a asp-controller="Home" asp-action="Index">Home</a></p>
+            <p class="m-0 px-2">-</p>
+            <p class="m-0">Shop</p>
+        </div>
     </div>
-    <a asp-action="Create" class="btn btn-primary">Create Product</a>
 </div>
 
-<div class="card card-shadow border-0">
-    <div class="card-body">
-        @if (!Model.Any())
-        {
-            <p class="text-muted mb-0">No products have been created yet.</p>
-        }
-        else
-        {
-            <div class="table-responsive">
-                <table class="table table-striped align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Category</th>
-                            <th>Price</th>
-                            <th>Stock</th>
-                            <th class="table-actions">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var product in Model)
-                        {
-                            <tr>
-                                <td>@product.Name</td>
-                                <td>@product.CategoryName</td>
-                                <td>@product.Price.ToString("C")</td>
-                                <td>@product.StockQuantity</td>
-                                <td class="table-actions">
-                                    <a asp-action="Details" asp-route-id="@product.Id" class="btn btn-sm btn-outline-secondary">Details</a>
-                                    <a asp-action="Edit" asp-route-id="@product.Id" class="btn btn-sm btn-outline-primary">Edit</a>
-                                    <a asp-action="Delete" asp-route-id="@product.Id" class="btn btn-sm btn-outline-danger">Delete</a>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+<div class="container-fluid pt-5">
+    <div class="row px-xl-5">
+        <div class="col-lg-3 col-md-12">
+            <div class="border-bottom mb-4 pb-4">
+                <h5 class="font-weight-semi-bold mb-4">Filter by category</h5>
+                <div class="category-quick-list">
+                    <a asp-action="Index"
+                       asp-route-searchTerm="@Model.SearchTerm"
+                       class="category-quick-link @(Model.CategoryId is null ? "active-filter" : string.Empty)">
+                        <span>All Categories</span>
+                        <span>@Model.Categories.Sum(category => category.ProductCount)</span>
+                    </a>
+                    @foreach (var category in Model.Categories)
+                    {
+                        <a asp-action="Index"
+                           asp-route-categoryId="@category.Id"
+                           asp-route-searchTerm="@Model.SearchTerm"
+                           class="category-quick-link @(Model.CategoryId == category.Id ? "active-filter" : string.Empty)">
+                            <span>@category.Name</span>
+                            <span>@category.ProductCount</span>
+                        </a>
+                    }
+                </div>
             </div>
-        }
+
+            <div class="border p-4 mb-5">
+                <h5 class="font-weight-semi-bold mb-3">Browse The Store</h5>
+                <p class="mb-3">Use categories and search to explore products the same way a customer would.</p>
+                <div class="dashboard-actions">
+                    <a asp-controller="Categories" asp-action="Index" class="btn btn-outline-primary btn-sm">Browse Categories</a>
+                    <a asp-action="Index" class="btn btn-outline-secondary btn-sm">All Products</a>
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-sm">Home</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-9 col-md-12">
+            <div class="row pb-3">
+                <div class="col-12 pb-1">
+                    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap">
+                        <form asp-action="Index" method="get" class="mb-3 mb-md-0 flex-grow-1 mr-md-3">
+                            <div class="input-group">
+                                <input type="text"
+                                       name="searchTerm"
+                                       value="@Model.SearchTerm"
+                                       class="form-control"
+                                       placeholder="Search by product, description, or category">
+                                @if (Model.CategoryId.HasValue)
+                                {
+                                    <input type="hidden" name="categoryId" value="@Model.CategoryId" />
+                                }
+                                <div class="input-group-append">
+                                    <button type="submit" class="input-group-text bg-transparent text-primary border-0">
+                                        <i class="fa fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="d-flex align-items-center mb-3 mb-md-0">
+                            <span class="mr-3 text-muted">@Model.Products.Count product(s)</span>
+                            @if (Model.HasFilters)
+                            {
+                                <a asp-action="Index" class="btn btn-outline-secondary">Clear Filters</a>
+                            }
+                        </div>
+                    </div>
+                    <p class="text-muted mb-4">
+                        Showing products for <strong>@Model.SelectedCategoryName</strong>
+                        @if (!string.IsNullOrWhiteSpace(Model.SearchTerm))
+                        {
+                            <span>matching "<strong>@Model.SearchTerm</strong>"</span>
+                        }
+                    </p>
+                </div>
+
+                @if (Model.Products.Any())
+                {
+                    @foreach (var product in Model.Products)
+                    {
+                        <partial name="_StoreProductCard" model="product" />
+                    }
+                }
+                else
+                {
+                    <div class="col-12">
+                        <div class="empty-state">
+                            <p>No products matched your filters yet.</p>
+                            <div class="dashboard-actions justify-content-center">
+                                <a asp-action="Index" class="btn btn-outline-primary">Reset Filters</a>
+                                <a asp-controller="Categories" asp-action="Index" class="btn btn-primary">Browse Categories</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
     </div>
 </div>

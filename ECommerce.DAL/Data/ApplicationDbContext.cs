@@ -1,9 +1,10 @@
 using ECommerce.DAL.Entities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.DAL.Data;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
 {
     public DbSet<Product> Products => Set<Product>();
 
@@ -12,6 +13,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<ApplicationUser>(entity =>
+        {
+            entity.Property(user => user.FullName)
+                .IsRequired()
+                .HasMaxLength(150);
+        });
 
         modelBuilder.Entity<Category>(entity =>
         {
@@ -31,6 +39,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
             entity.Property(product => product.Description)
                 .HasMaxLength(1000);
+
+            entity.Property(product => product.ImageUrl)
+                .HasMaxLength(500);
 
             entity.Property(product => product.Price)
                 .HasPrecision(18, 2);

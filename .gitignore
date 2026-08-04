@@ -5,3 +5,4 @@ obj/
 *.suo
 *.userosscache
 *.sln.docstates
+ECommerce.Web/wwwroot/uploads/

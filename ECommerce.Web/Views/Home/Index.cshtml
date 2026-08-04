@@ -1,0 +1,251 @@
+@model StorefrontHomeViewModel
+@{
+    ViewData["Title"] = "Home";
+    ViewData["ProductCardColumnClass"] = "col-lg-3 col-md-6 col-sm-12 pb-1";
+    var isAdminUser = User.IsInRole("Admin");
+}
+
+<div class="container-fluid mb-5">
+    <div class="row border-top px-xl-5">
+        <div class="col-lg-3 d-none d-lg-block">
+            <div class="category-quick-list">
+                @if (Model.Categories.Any())
+                {
+                    @foreach (var category in Model.Categories)
+                    {
+                        <a asp-controller="Products"
+                           asp-action="Index"
+                           asp-route-categoryId="@category.Id"
+                           class="category-quick-link">
+                            <span>@category.Name</span>
+                            <span>@category.ProductCount</span>
+                        </a>
+                    }
+                }
+                else
+                {
+                    <div class="empty-state h-100 d-flex flex-column justify-content-center">
+                        <p class="mb-2">No categories yet.</p>
+                        @if (isAdminUser)
+                        {
+                            <a asp-controller="Categories" asp-action="Create" class="btn btn-primary">Create Category</a>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="col-lg-9">
+            <div id="header-carousel" class="carousel slide carousel-fade mb-30 mb-lg-0" data-ride="carousel">
+                <ol class="carousel-indicators">
+                    <li data-target="#header-carousel" data-slide-to="0" class="active"></li>
+                    <li data-target="#header-carousel" data-slide-to="1"></li>
+                </ol>
+                <div class="carousel-inner">
+                    <div class="carousel-item active" style="height: 410px;">
+                        <img class="img-fluid" src="~/eshopper/img/carousel-1.jpg" asp-append-version="true" alt="Featured collection">
+                        <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
+                            <div class="p-3" style="max-width: 700px;">
+                                <h4 class="text-light text-uppercase font-weight-medium mb-3">Fresh storefront for your MVC app</h4>
+                                <h3 class="display-4 text-white font-weight-semi-bold mb-4">Browse Products In Style</h3>
+                                <a asp-controller="Products" asp-action="Index" class="btn btn-light py-2 px-3">Shop Now</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="carousel-item" style="height: 410px;">
+                        <img class="img-fluid" src="~/eshopper/img/carousel-2.jpg" asp-append-version="true" alt="Latest arrivals">
+                        <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
+                            <div class="p-3" style="max-width: 700px;">
+                                <h4 class="text-light text-uppercase font-weight-medium mb-3">Real catalog connected to your data</h4>
+                                <h3 class="display-4 text-white font-weight-semi-bold mb-4">Products, Categories, Details</h3>
+                                @if (isAdminUser)
+                                {
+                                    <a asp-controller="Products" asp-action="Admin" class="btn btn-light py-2 px-3">Manage Catalog</a>
+                                }
+                                else
+                                {
+                                    <a asp-controller="Categories" asp-action="Index" class="btn btn-light py-2 px-3">Browse Categories</a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <a class="carousel-control-prev" href="#header-carousel" data-slide="prev">
+                    <div class="btn btn-dark" style="width: 45px; height: 45px;">
+                        <span class="carousel-control-prev-icon mb-n2"></span>
+                    </div>
+                </a>
+                <a class="carousel-control-next" href="#header-carousel" data-slide="next">
+                    <div class="btn btn-dark" style="width: 45px; height: 45px;">
+                        <span class="carousel-control-next-icon mb-n2"></span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid pt-5">
+    <div class="row px-xl-5 pb-3">
+        <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
+            <div class="d-flex align-items-center border mb-4" style="padding: 30px;">
+                <h1 class="fa fa-check text-primary m-0 mr-3"></h1>
+                <h5 class="font-weight-semi-bold m-0">Managed Products</h5>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
+            <div class="d-flex align-items-center border mb-4" style="padding: 30px;">
+                <h1 class="fa fa-tags text-primary m-0 mr-2"></h1>
+                <h5 class="font-weight-semi-bold m-0">Category Filters</h5>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
+            <div class="d-flex align-items-center border mb-4" style="padding: 30px;">
+                <h1 class="fas fa-store text-primary m-0 mr-3"></h1>
+                <h5 class="font-weight-semi-bold m-0">Storefront Ready</h5>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
+            <div class="d-flex align-items-center border mb-4" style="padding: 30px;">
+                <h1 class="fa fa-phone-volume text-primary m-0 mr-3"></h1>
+                <h5 class="font-weight-semi-bold m-0">Easy To Extend</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid pt-5">
+    <div class="text-center mb-4">
+        <h2 class="section-title px-5"><span class="px-2">Shop By Category</span></h2>
+    </div>
+    <div class="row px-xl-5 pb-3">
+        @if (Model.Categories.Any())
+        {
+            @foreach (var category in Model.Categories)
+            {
+                <div class="col-lg-4 col-md-6 pb-1">
+                    <div class="cat-item d-flex flex-column border mb-4" style="padding: 30px;">
+                        <p class="text-right">@category.ProductCount Products</p>
+                        <a asp-controller="Products"
+                           asp-action="Index"
+                           asp-route-categoryId="@category.Id"
+                           class="cat-img position-relative overflow-hidden mb-3">
+                            <img class="img-fluid" src="@category.ImageUrl" alt="@category.Name">
+                        </a>
+                        <h5 class="font-weight-semi-bold m-0">@category.Name</h5>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="empty-state">
+                    <p>No categories are available yet, so the storefront has nothing to group products by.</p>
+                    @if (isAdminUser)
+                    {
+                        <a asp-controller="Categories" asp-action="Create" class="btn btn-primary">Create Your First Category</a>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="container-fluid offer pt-5">
+    <div class="row px-xl-5">
+        <div class="col-md-6 pb-4">
+            <div class="position-relative bg-secondary text-center text-md-right text-white mb-2 py-5 px-5">
+                <img src="~/eshopper/img/offer-1.png" asp-append-version="true" alt="Offer banner">
+                <div class="position-relative" style="z-index: 1;">
+                    <h5 class="text-uppercase text-primary mb-3">Bring your existing data to life</h5>
+                    <h1 class="mb-4 font-weight-semi-bold">Modern Product Listing</h1>
+                    <a asp-controller="Products" asp-action="Index" class="btn btn-outline-primary py-md-2 px-md-3">Explore Shop</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 pb-4">
+            <div class="position-relative bg-secondary text-center text-md-left text-white mb-2 py-5 px-5">
+                <img src="~/eshopper/img/offer-2.png" asp-append-version="true" alt="Admin banner">
+                <div class="position-relative" style="z-index: 1;">
+                    <h5 class="text-uppercase text-primary mb-3">Keep CRUD access while upgrading the UI</h5>
+                    <h1 class="mb-4 font-weight-semi-bold">Catalog Management</h1>
+                    @if (isAdminUser)
+                    {
+                        <a asp-controller="Products" asp-action="Admin" class="btn btn-outline-primary py-md-2 px-md-3">Open Dashboard</a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Products" asp-action="Index" class="btn btn-outline-primary py-md-2 px-md-3">Browse Shop</a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid pt-5">
+    <div class="text-center mb-4">
+        <h2 class="section-title px-5"><span class="px-2">Featured Products</span></h2>
+    </div>
+    <div class="row px-xl-5 pb-3">
+        @if (Model.FeaturedProducts.Any())
+        {
+            @foreach (var product in Model.FeaturedProducts)
+            {
+                <partial name="_StoreProductCard" model="product" />
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="empty-state">
+                    <p>No products yet. Add a product and this storefront will start looking alive immediately.</p>
+                    @if (isAdminUser)
+                    {
+                        <div class="dashboard-actions justify-content-center">
+                            <a asp-controller="Products" asp-action="Create" class="btn btn-primary">Add Product</a>
+                            <a asp-controller="Categories" asp-action="Create" class="btn btn-outline-primary">Add Category</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="container-fluid bg-secondary my-5">
+    <div class="row justify-content-md-center py-5 px-xl-5">
+        <div class="col-md-7 col-12 py-5 text-center">
+            <h2 class="section-title px-5 mb-3"><span class="bg-secondary px-2">Storefront Upgrade</span></h2>
+            <p class="mb-4">Your MVC project now has a proper home page, a customer-facing shop view, and product detail pages built on top of your real data.</p>
+            <a asp-controller="Products" asp-action="Index" class="btn btn-primary px-4 py-2">Start Browsing</a>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid pt-5">
+    <div class="text-center mb-4">
+        <h2 class="section-title px-5"><span class="px-2">Just Arrived</span></h2>
+    </div>
+    <div class="row px-xl-5 pb-3">
+        @if (Model.NewArrivals.Any())
+        {
+            @foreach (var product in Model.NewArrivals)
+            {
+                <partial name="_StoreProductCard" model="product" />
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="empty-state">
+                    <p>Latest products will appear here once you start adding items to the catalog.</p>
+                    @if (isAdminUser)
+                    {
+                        <a asp-controller="Products" asp-action="Admin" class="btn btn-primary">Go To Product Admin</a>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>

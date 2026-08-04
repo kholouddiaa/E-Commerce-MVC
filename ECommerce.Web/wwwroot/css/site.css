@@ -1,26 +1,17 @@
 html {
-  font-size: 14px;
-  position: relative;
-  min-height: 100%;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+  scroll-behavior: smooth;
 }
 
 body {
-  margin-bottom: 60px;
-  background-color: #f7f9fc;
+  margin: 0;
+  font-family: "Poppins", sans-serif;
 }
 
 .btn:focus,
 .btn:active:focus,
 .btn-link.nav-link:focus,
-.form-control:focus,
-.form-select:focus {
-  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.2);
+.form-control:focus {
+  box-shadow: 0 0 0 0.2rem rgba(209, 156, 151, 0.2);
 }
 
 .table-actions {
@@ -30,15 +21,113 @@ body {
 .page-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
 
 .page-header h1 {
-  margin-bottom: 0;
+  margin-bottom: 0.35rem;
+  color: #1c1c1c;
 }
 
 .card-shadow {
-  box-shadow: 0 0.5rem 1rem rgba(15, 23, 42, 0.08);
+  box-shadow: 0 0.75rem 2rem rgba(28, 28, 28, 0.08);
+}
+
+.store-alerts .alert {
+  border-radius: 0;
+}
+
+.category-quick-list {
+  background: #fff;
+}
+
+.category-quick-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  color: #6f6f6f;
+  border: 1px solid #edf1ff;
+  border-top: 0;
+}
+
+.category-quick-link:first-child {
+  border-top: 1px solid #edf1ff;
+}
+
+.category-quick-link:hover,
+.category-quick-link.active-filter {
+  color: #d19c97;
+  background: #fdf7f6;
+  text-decoration: none;
+}
+
+.empty-state {
+  padding: 3rem 2rem;
+  text-align: center;
+  border: 1px dashed #d5dbe4;
+  background: #fff;
+}
+
+.dashboard-actions {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.dashboard-actions .btn {
+  margin-right: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.dashboard-actions .btn:last-child {
+  margin-right: 0;
+}
+
+.detail-image-shell {
+  background: linear-gradient(180deg, rgba(209, 156, 151, 0.12), #fff);
+}
+
+.product-description {
+  white-space: pre-line;
+}
+
+.store-metric {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.store-metric i {
+  margin-right: 0.5rem;
+}
+
+.product-card-category {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+.footer-links a {
+  display: block;
+  margin-bottom: 0.65rem;
+  color: #6f6f6f;
+}
+
+.footer-links a:hover {
+  color: #d19c97;
+  text-decoration: none;
+}
+
+label.form-label {
+  font-weight: 600;
+  color: #1c1c1c;
+}
+
+@media (max-width: 991.98px) {
+  .page-header {
+    flex-direction: column;
+  }
 }

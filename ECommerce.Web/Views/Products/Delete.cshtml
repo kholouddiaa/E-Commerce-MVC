@@ -8,7 +8,7 @@
         <h1>Delete Product</h1>
         <p class="text-muted mb-0">Confirm before removing this product.</p>
     </div>
-    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+    <a asp-action="Admin" class="btn btn-outline-secondary">Back to List</a>
 </div>
 
 <div class="card border-danger card-shadow">
@@ -28,7 +28,7 @@
         <form asp-action="Delete" method="post">
             <input type="hidden" asp-for="Id" />
             <button type="submit" class="btn btn-danger">Delete</button>
-            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            <a asp-action="Admin" class="btn btn-outline-secondary">Cancel</a>
         </form>
     </div>
 </div>

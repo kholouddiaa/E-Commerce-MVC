@@ -1,36 +1,111 @@
-@model ProductDto
+@model StorefrontProductDetailsViewModel
 @{
-    ViewData["Title"] = "Product Details";
+    ViewData["Title"] = Model.Product.Name;
+    ViewData["ProductCardColumnClass"] = "col-lg-3 col-md-6 col-sm-12 pb-1";
 }
 
-<div class="page-header">
-    <div>
-        <h1>Product Details</h1>
-        <p class="text-muted mb-0">Review product information.</p>
-    </div>
-    <div>
-        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
-        <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+<div class="container-fluid bg-secondary mb-5">
+    <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 300px">
+        <h1 class="font-weight-semi-bold text-uppercase mb-3">@Model.Product.Name</h1>
+        <div class="d-inline-flex">
+            <p class="m-0"><a asp-controller="Home" asp-action="Index">Home</a></p>
+            <p class="m-0 px-2">-</p>
+            <p class="m-0"><a asp-action="Index">Shop</a></p>
+            <p class="m-0 px-2">-</p>
+            <p class="m-0">Details</p>
+        </div>
     </div>
 </div>
 
-<div class="card card-shadow border-0">
-    <div class="card-body">
-        <dl class="row mb-0">
-            <dt class="col-sm-3">Name</dt>
-            <dd class="col-sm-9">@Model.Name</dd>
+<div class="container-fluid py-5">
+    <div class="row px-xl-5">
+        <div class="col-lg-5 pb-5">
+            <div class="border p-4 detail-image-shell">
+                <img class="w-100" src="@StorefrontAssetHelper.GetProductImage(Model.Product.Id, Model.Product.ImageUrl)" alt="@Model.Product.Name">
+            </div>
+        </div>
 
-            <dt class="col-sm-3">Category</dt>
-            <dd class="col-sm-9">@Model.CategoryName</dd>
+        <div class="col-lg-7 pb-5">
+            <span class="badge badge-primary text-uppercase mb-3">@Model.Product.CategoryName</span>
+            <h3 class="font-weight-semi-bold">@Model.Product.Name</h3>
+            <h3 class="font-weight-semi-bold mb-4">@Model.Product.Price.ToString("C")</h3>
+            <p class="mb-4 product-description">
+                @(string.IsNullOrWhiteSpace(Model.Product.Description)
+                    ? "This product does not have a detailed description yet. You can add one from the admin dashboard to make the storefront feel even more complete."
+                    : Model.Product.Description)
+            </p>
 
-            <dt class="col-sm-3">Price</dt>
-            <dd class="col-sm-9">@Model.Price.ToString("C")</dd>
+            <div class="d-flex flex-wrap mb-4">
+                <span class="store-metric"><i class="fas fa-box text-primary"></i>@(Model.Product.StockQuantity > 0 ? $"{Model.Product.StockQuantity} items in stock" : "Currently out of stock")</span>
+                <span class="store-metric"><i class="fas fa-tags text-primary"></i>@Model.Product.CategoryName</span>
+                <span class="store-metric"><i class="fas fa-database text-primary"></i>Connected to MVC data</span>
+            </div>
 
-            <dt class="col-sm-3">Stock Quantity</dt>
-            <dd class="col-sm-9">@Model.StockQuantity</dd>
+            <div class="dashboard-actions">
+                <a asp-action="Index" class="btn btn-outline-primary">Back To Shop</a>
+                <a asp-action="Index" asp-route-categoryId="@Model.Product.CategoryId" class="btn btn-outline-secondary">More In @Model.Product.CategoryName</a>
+                <a asp-controller="Categories" asp-action="Index" class="btn btn-outline-secondary">Browse Categories</a>
+            </div>
+        </div>
+    </div>
 
-            <dt class="col-sm-3">Description</dt>
-            <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.Description) ? "No description provided." : Model.Description)</dd>
-        </dl>
+    <div class="row px-xl-5">
+        <div class="col-12">
+            <div class="nav nav-tabs justify-content-center border-secondary mb-4">
+                <a class="nav-item nav-link active" data-toggle="tab" href="#tab-pane-1">Description</a>
+                <a class="nav-item nav-link" data-toggle="tab" href="#tab-pane-2">Product Info</a>
+            </div>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="tab-pane-1">
+                    <h4 class="mb-3">Product Description</h4>
+                    <p class="product-description">
+                        @(string.IsNullOrWhiteSpace(Model.Product.Description)
+                            ? "Add a product description from the admin side to enrich this page with specs, benefits, or selling points."
+                            : Model.Product.Description)
+                    </p>
+                </div>
+                <div class="tab-pane fade" id="tab-pane-2">
+                    <h4 class="mb-3">Additional Information</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item px-0">Category: @Model.Product.CategoryName</li>
+                                <li class="list-group-item px-0">Price: @Model.Product.Price.ToString("C")</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item px-0">Stock: @Model.Product.StockQuantity</li>
+                                <li class="list-group-item px-0">Product ID: @Model.Product.Id</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid py-5">
+    <div class="text-center mb-4">
+        <h2 class="section-title px-5"><span class="px-2">You May Also Like</span></h2>
+    </div>
+    <div class="row px-xl-5">
+        @if (Model.RelatedProducts.Any())
+        {
+            @foreach (var product in Model.RelatedProducts)
+            {
+                <partial name="_StoreProductCard" model="product" />
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="empty-state">
+                    <p>No related products were found yet.</p>
+                    <a asp-action="Index" class="btn btn-primary">Browse All Products</a>
+                </div>
+            </div>
+        }
     </div>
 </div>
