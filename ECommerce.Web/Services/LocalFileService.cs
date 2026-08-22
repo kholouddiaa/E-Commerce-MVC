@@ -67,36 +67,26 @@ public class LocalFileService(IWebHostEnvironment webHostEnvironment) : IFileSer
             return false;
         }
 
-        foreach (var productImageRootPath in GetProductImageRootPaths())
+        var productImageRootPath = GetConfiguredProductImageRootPath();
+        var candidatePath = Path.Combine(productImageRootPath, imageFileName);
+
+        try
         {
-            var normalizedProductImageRootPath =
-                Path.GetFullPath(productImageRootPath).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-            var candidatePath = Path.GetFullPath(Path.Combine(productImageRootPath, imageFileName));
-
-            if (!candidatePath.StartsWith(normalizedProductImageRootPath, StringComparison.OrdinalIgnoreCase))
+            if (File.Exists(candidatePath))
             {
-                return false;
+                File.Delete(candidatePath);
             }
 
-            try
-            {
-                if (File.Exists(candidatePath))
-                {
-                    File.Delete(candidatePath);
-                    return true;
-                }
-            }
-            catch (IOException)
-            {
-                return false;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return false;
-            }
+            return true;
         }
-
-        return true;
+        catch (IOException)
+        {
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
+        }
     }
 
     private string GetConfiguredProductImageRootPath()
@@ -105,44 +95,11 @@ public class LocalFileService(IWebHostEnvironment webHostEnvironment) : IFileSer
         return Path.Combine(webRootPath, "uploads", "products");
     }
 
-    private IReadOnlyList<string> GetProductImageRootPaths()
-    {
-        var configuredWebRootPath = GetConfiguredProductImageRootPath();
-        var contentRootProductImagePath = Path.Combine(webHostEnvironment.ContentRootPath, "wwwroot", "uploads", "products");
-
-        return new[] { configuredWebRootPath, contentRootProductImagePath }
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToList();
-    }
-
     private static string? GetProductImageFileName(string imagePath)
     {
-        var normalizedPath = imagePath.Trim();
-        if (Uri.TryCreate(normalizedPath, UriKind.Absolute, out var absoluteUri))
-        {
-            normalizedPath = absoluteUri.AbsolutePath;
-        }
-
-        normalizedPath = normalizedPath
-            .TrimStart('~')
-            .TrimStart('/', '\\')
-            .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
-
-        var normalizedProductImageFolder = ProductImageFolder.Replace('/', Path.DirectorySeparatorChar);
-        var expectedFolderPrefix = normalizedProductImageFolder + Path.DirectorySeparatorChar;
-
-        if (!normalizedPath.StartsWith(expectedFolderPrefix, StringComparison.OrdinalIgnoreCase))
-        {
-            var folderIndex = normalizedPath.IndexOf(expectedFolderPrefix, StringComparison.OrdinalIgnoreCase);
-            if (folderIndex < 0)
-            {
-                return null;
-            }
-
-            normalizedPath = normalizedPath[folderIndex..];
-        }
-
+        var normalizedPath = imagePath.Trim().Replace('\\', '/');
         var imageFileName = Path.GetFileName(normalizedPath);
+
         return string.IsNullOrWhiteSpace(imageFileName) ? null : imageFileName;
     }
 }
