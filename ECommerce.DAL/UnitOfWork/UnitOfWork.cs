@@ -10,12 +10,15 @@ public class UnitOfWork(ApplicationDbContext context) : IUnitOfWork
     private IProductRepository? _products;
     private ICategoryRepository? _categories;
     private IOrderRepository? _orders;
+    private IReviewRepository? _reviews;
 
     public IProductRepository Products => _products ??= new ProductRepository(context);
 
     public ICategoryRepository Categories => _categories ??= new CategoryRepository(context);
 
     public IOrderRepository Orders => _orders ??= new OrderRepository(context);
+
+    public IReviewRepository Reviews => _reviews ??= new ReviewRepository(context);
 
     public Task<int> SaveChangesAsync()
     {

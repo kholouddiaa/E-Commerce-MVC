@@ -30,6 +30,20 @@
             <span class="badge badge-primary text-uppercase mb-3">@Model.Product.CategoryName</span>
             <h3 class="font-weight-semi-bold">@Model.Product.Name</h3>
             <h3 class="font-weight-semi-bold mb-4">@Model.Product.Price.ToString("C")</h3>
+            <div class="mb-4">
+                <p class="mb-2">
+                    <strong>Rating:</strong>
+                    @if (Model.AverageRating.HasValue)
+                    {
+                        @($"{Model.AverageRating.Value:0.0} / 5")
+                    }
+                    else
+                    {
+                        @:No ratings yet
+                    }
+                </p>
+                <p class="mb-0"><strong>Reviews:</strong> @Model.ReviewCount</p>
+            </div>
             <p class="mb-4 product-description">
                 @(string.IsNullOrWhiteSpace(Model.Product.Description)
                     ? "This product does not have a detailed description yet. You can add one from the admin dashboard to make the storefront feel even more complete."
@@ -98,6 +112,107 @@
 </div>
 
 <div class="container-fluid py-5">
+    <div class="row px-xl-5">
+        <div class="col-lg-5 mb-5">
+            <div class="border p-4 h-100">
+                <h4 class="font-weight-semi-bold mb-3">Customer Reviews</h4>
+                <p class="mb-2">
+                    <strong>Average Rating:</strong>
+                    @(Model.AverageRating.HasValue ? $"{Model.AverageRating.Value:0.0} / 5" : "No ratings yet")
+                </p>
+                <p class="mb-4"><strong>Total Reviews:</strong> @Model.ReviewCount</p>
+
+                @if (User.IsInRole("Customer"))
+                {
+                    <h5 class="font-weight-semi-bold mb-3">
+                        @(Model.CurrentUserReview is null ? "Write a Review" : "Update Your Review")
+                    </h5>
+                    <form asp-controller="Reviews"
+                          asp-action="@(Model.CurrentUserReview is null ? "Create" : "Update")"
+                          asp-route-id="@Model.CurrentUserReview?.Id"
+                          method="post">
+                        <input asp-for="ReviewForm.ProductId" type="hidden" />
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="form-group">
+                            <label asp-for="ReviewForm.Rating"></label>
+                            <select asp-for="ReviewForm.Rating" class="form-control">
+                                <option value="">Select a rating</option>
+                                @for (var rating = 1; rating <= 5; rating++)
+                                {
+                                    <option value="@rating">@rating</option>
+                                }
+                            </select>
+                            <span asp-validation-for="ReviewForm.Rating" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="ReviewForm.Comment"></label>
+                            <textarea asp-for="ReviewForm.Comment" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="ReviewForm.Comment" class="text-danger"></span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            @(Model.CurrentUserReview is null ? "Submit Review" : "Save Changes")
+                        </button>
+                    </form>
+
+                    @if (Model.CurrentUserReview is not null)
+                    {
+                        <form asp-controller="Reviews"
+                              asp-action="Delete"
+                              asp-route-id="@Model.CurrentUserReview.Id"
+                              method="post"
+                              class="mt-3">
+                            <input type="hidden" name="productId" value="@Model.Product.Id" />
+                            <button type="submit" class="btn btn-outline-danger">Delete Review</button>
+                        </form>
+                    }
+                }
+                else
+                {
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <p class="mb-0">Only customer accounts can create, edit, or delete reviews.</p>
+                    }
+                    else
+                    {
+                        <p class="mb-0">
+                            <a asp-controller="Account" asp-action="Login">Log in</a> with a customer account to add your review.
+                        </p>
+                    }
+                }
+            </div>
+        </div>
+        <div class="col-lg-7 mb-5">
+            <div class="border p-4 h-100">
+                <h4 class="font-weight-semi-bold mb-3">What Customers Are Saying</h4>
+
+                @if (Model.Reviews.Any())
+                {
+                    @foreach (var review in Model.Reviews)
+                    {
+                        <div class="border-bottom pb-3 mb-3">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
+                                <strong>@review.ReviewerName</strong>
+                                <small class="text-muted">@review.UpdatedAt.ToLocalTime().ToString("g")</small>
+                            </div>
+                            <p class="mb-2"><strong>Rating:</strong> @review.Rating / 5</p>
+                            <p class="mb-0">@review.Comment</p>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="mb-0">No reviews have been submitted for this product yet.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid py-5">
     <div class="text-center mb-4">
         <h2 class="section-title px-5"><span class="px-2">You May Also Like</span></h2>
     </div>
@@ -120,3 +235,7 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

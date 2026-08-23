@@ -10,5 +10,7 @@ public interface IUnitOfWork : IAsyncDisposable
 
     IOrderRepository Orders { get; }
 
+    IReviewRepository Reviews { get; }
+
     Task<int> SaveChangesAsync();
 }

@@ -1,17 +1,22 @@
 using ECommerce.BLL.DTOs.Products;
+using ECommerce.BLL.DTOs.Reviews;
 using ECommerce.BLL.Services.Interfaces;
 using ECommerce.Web.Helpers;
 using ECommerce.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ECommerce.Web.Controllers;
 
 [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
 public class ProductsController(
     IProductService productService,
-    ICategoryService categoryService) : Controller
+    ICategoryService categoryService,
+    IReviewService reviewService) : Controller
 {
+    private const string CustomerRoleName = "Customer";
+
     [AllowAnonymous]
     public async Task<IActionResult> Index(ProductQueryParameters queryParameters)
     {
@@ -62,23 +67,21 @@ public class ProductsController(
         }
 
         var allProducts = await productService.GetAllAsync();
-        var relatedProducts = allProducts
-            .Where(candidate => candidate.Id != id && candidate.CategoryId == product.CategoryId)
-            .Take(4)
-            .ToList();
-
-        if (relatedProducts.Count == 0)
-        {
-            relatedProducts = allProducts
-                .Where(candidate => candidate.Id != id)
-                .Take(4)
-                .ToList();
-        }
+        var relatedProducts = BuildRelatedProducts(product, allProducts);
+        var currentUserId = User.IsInRole(CustomerRoleName)
+            ? User.FindFirstValue(ClaimTypes.NameIdentifier)
+            : null;
+        var productReviews = await reviewService.GetProductReviewsAsync(id, currentUserId);
 
         var model = new StorefrontProductDetailsViewModel
         {
             Product = product,
-            RelatedProducts = relatedProducts
+            RelatedProducts = relatedProducts,
+            AverageRating = productReviews.AverageRating,
+            ReviewCount = productReviews.ReviewCount,
+            Reviews = productReviews.Reviews,
+            CurrentUserReview = productReviews.CurrentUserReview,
+            ReviewForm = BuildReviewForm(id, productReviews.CurrentUserReview)
         };
 
         return View(model);
@@ -206,5 +209,38 @@ public class ProductsController(
             Text = category.Name,
             Selected = category.Id == selectedCategoryId
         });
+    }
+
+    private static List<ProductDto> BuildRelatedProducts(ProductDto product, IReadOnlyList<ProductDto> allProducts)
+    {
+        var relatedProducts = allProducts
+            .Where(candidate => candidate.Id != product.Id && candidate.CategoryId == product.CategoryId)
+            .Take(4)
+            .ToList();
+
+        if (relatedProducts.Count == 0)
+        {
+            relatedProducts = allProducts
+                .Where(candidate => candidate.Id != product.Id)
+                .Take(4)
+                .ToList();
+        }
+
+        return relatedProducts;
+    }
+
+    private static ReviewUpsertDto BuildReviewForm(int productId, ReviewDto? currentUserReview)
+    {
+        return currentUserReview is null
+            ? new ReviewUpsertDto
+            {
+                ProductId = productId
+            }
+            : new ReviewUpsertDto
+            {
+                ProductId = productId,
+                Rating = currentUserReview.Rating,
+                Comment = currentUserReview.Comment
+            };
     }
 }
