@@ -20,7 +20,7 @@ public class GenericRepository<TEntity>(ApplicationDbContext context) : IGeneric
 
     public virtual async Task<TEntity?> GetByIdAsync(int id)
     {
-        return await DbSet.FindAsync(id);
+        return await DbSet.FirstOrDefaultAsync(entity => entity.Id == id);
     }
 
     public virtual async Task AddAsync(TEntity entity)
@@ -35,6 +35,7 @@ public class GenericRepository<TEntity>(ApplicationDbContext context) : IGeneric
 
     public virtual void Delete(TEntity entity)
     {
-        DbSet.Remove(entity);
+        entity.IsDeleted = true;
+        DbSet.Update(entity);
     }
 }

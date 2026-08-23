@@ -81,6 +81,37 @@ public class ProductRepository(ApplicationDbContext context) : GenericRepository
             .FirstOrDefaultAsync(product => product.Id == id);
     }
 
+    public async Task<IReadOnlyList<Product>> GetByIdsAsync(IReadOnlyCollection<int> ids)
+    {
+        if (ids.Count == 0)
+        {
+            return [];
+        }
+
+        return await Context.Products
+            .AsNoTracking()
+            .Where(product => ids.Contains(product.Id))
+            .ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<Product>> GetDeletedWithCategoryAsync()
+    {
+        return await Context.Products
+            .IgnoreQueryFilters()
+            .Where(product => product.IsDeleted)
+            .AsNoTracking()
+            .Include(product => product.Category)
+            .OrderBy(product => product.Name)
+            .ToListAsync();
+    }
+
+    public async Task<Product?> GetDeletedByIdAsync(int id)
+    {
+        return await Context.Products
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(product => product.Id == id && product.IsDeleted);
+    }
+
     public async Task<int> GetTotalCountAsync()
     {
         return await Context.Products

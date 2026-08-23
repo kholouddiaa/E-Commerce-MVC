@@ -1,0 +1,56 @@
+@model CheckoutViewModel
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+<div class="container-fluid pt-5">
+    <div class="row px-xl-5">
+        <div class="col-lg-7 mb-5">
+            <div class="card border-secondary">
+                <div class="card-header bg-secondary border-0">
+                    <h4 class="font-weight-semi-bold m-0">Delivery Information</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Checkout" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div class="form-group">
+                            <label asp-for="DeliveryAddress"></label>
+                            <textarea asp-for="DeliveryAddress" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="DeliveryAddress" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Phone"></label>
+                            <input asp-for="Phone" class="form-control" />
+                            <span asp-validation-for="Phone" class="text-danger"></span>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Confirm Order and Pay</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5 mb-5">
+            <div class="card border-secondary">
+                <div class="card-header bg-secondary border-0">
+                    <h4 class="font-weight-semi-bold m-0">Order Summary</h4>
+                </div>
+                <div class="card-body">
+                    @foreach (var item in Model.Items)
+                    {
+                        <div class="d-flex justify-content-between border-bottom py-2">
+                            <span>@item.ProductName x @item.Quantity</span>
+                            <span>@((item.Price * item.Quantity).ToString("C"))</span>
+                        </div>
+                    }
+                    <div class="d-flex justify-content-between pt-3">
+                        <h5 class="font-weight-bold">Grand Total</h5>
+                        <h5 class="font-weight-bold">@Model.OrderTotal.ToString("C")</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

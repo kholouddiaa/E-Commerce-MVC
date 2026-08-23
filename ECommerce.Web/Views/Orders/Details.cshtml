@@ -1,0 +1,60 @@
+@model OrderDetailsDto
+@{
+    ViewData["Title"] = "Order Details";
+}
+
+<div class="container-fluid py-5">
+    <div class="row px-xl-5">
+        <div class="col-12">
+            <div class="page-header">
+                <div>
+                    <h1>Order #@Model.Id</h1>
+                    <p class="text-muted mb-0">@Model.OrderDate.ToLocalTime().ToString("f")</p>
+                </div>
+                <a asp-action="Index" class="btn btn-outline-secondary">Back to My Orders</a>
+            </div>
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <div class="card card-shadow border-0 h-100">
+                        <div class="card-body">
+                            <h5>Delivery Information</h5>
+                            <p class="mb-2"><strong>Status:</strong> @Model.Status</p>
+                            <p class="mb-2"><strong>Address:</strong> @Model.DeliveryAddress</p>
+                            <p class="mb-0"><strong>Phone:</strong> @Model.Phone</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-8 mb-4">
+                    <div class="card card-shadow border-0">
+                        <div class="card-body table-responsive">
+                            <table class="table table-striped align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Unit Price</th>
+                                        <th>Quantity</th>
+                                        <th>Line Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Items)
+                                    {
+                                        <tr>
+                                            <td>@item.ProductName</td>
+                                            <td>@item.UnitPrice.ToString("C")</td>
+                                            <td>@item.Quantity</td>
+                                            <td>@((item.UnitPrice * item.Quantity).ToString("C"))</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                            <div class="d-flex justify-content-end pt-3">
+                                <h5 class="font-weight-bold">Grand Total: @Model.TotalAmount.ToString("C")</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -14,6 +14,7 @@
                 <div class="dashboard-actions">
                     <a asp-action="Index" class="btn btn-outline-primary">View Shop</a>
                     <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Home</a>
+                    <a asp-action="Archived" class="btn btn-outline-secondary">Archived Products</a>
                     <a asp-action="Create" class="btn btn-primary">Create Product</a>
                 </div>
             </div>
@@ -51,7 +52,7 @@
                                             <td class="table-actions">
                                                 <a asp-action="Details" asp-route-id="@product.Id" class="btn btn-sm btn-outline-secondary">Preview</a>
                                                 <a asp-action="Edit" asp-route-id="@product.Id" class="btn btn-sm btn-outline-primary">Edit</a>
-                                                <a asp-action="Delete" asp-route-id="@product.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                                                <a asp-action="Delete" asp-route-id="@product.Id" class="btn btn-sm btn-outline-danger">Archive</a>
                                             </td>
                                         </tr>
                                     }

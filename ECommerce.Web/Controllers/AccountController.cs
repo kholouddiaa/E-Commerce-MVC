@@ -1,3 +1,5 @@
+using ECommerce.BLL.Emails;
+using ECommerce.BLL.Services.Interfaces;
 using ECommerce.DAL.Entities;
 using ECommerce.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -9,7 +11,9 @@ namespace ECommerce.Web.Controllers;
 public class AccountController(
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager,
-    RoleManager<IdentityRole> roleManager) : Controller
+    RoleManager<IdentityRole> roleManager,
+    IEmailService emailService,
+    ILogger<AccountController> logger) : Controller
 {
     private const string CustomerRoleName = "Customer";
 
@@ -67,6 +71,23 @@ public class AccountController(
             await userManager.DeleteAsync(user);
             AddIdentityErrors(addToRoleResult);
             return View(model);
+        }
+
+        if (!string.IsNullOrWhiteSpace(user.Email))
+        {
+            try
+            {
+                var emailBody = EmailTemplate.Create(
+                    "Welcome",
+                    "Welcome to E-Commerce MVC",
+                    $"<p>Hello {EmailTemplate.Encode(user.FullName)},</p><p>Your account has been created successfully.</p>");
+
+                await emailService.SendHtmlEmailAsync(user.Email, "Welcome to E-Commerce MVC", emailBody);
+            }
+            catch (Exception exception)
+            {
+                logger.LogError(exception, "Unable to send welcome email for user {UserId}.", user.Id);
+            }
         }
 
         TempData["SuccessMessage"] = "Registration completed successfully. Please log in with your new account.";

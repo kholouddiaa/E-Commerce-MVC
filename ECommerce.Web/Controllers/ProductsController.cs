@@ -46,6 +46,12 @@ public class ProductsController(
         return View(products);
     }
 
+    public async Task<IActionResult> Archived()
+    {
+        var products = await productService.GetArchivedAsync();
+        return View(products);
+    }
+
     [AllowAnonymous]
     public async Task<IActionResult> Details(int id)
     {
@@ -158,11 +164,26 @@ public class ProductsController(
         var result = await productService.DeleteAsync(id);
         if (!result.Succeeded)
         {
-            TempData["ErrorMessage"] = result.ErrorMessage ?? "Unable to delete the product.";
+            TempData["ErrorMessage"] = result.ErrorMessage ?? "Unable to archive the product.";
             return RedirectToAction(nameof(Admin));
         }
 
-        TempData["SuccessMessage"] = "Product deleted successfully.";
+        TempData["SuccessMessage"] = "Product archived successfully.";
+        return RedirectToAction(nameof(Admin));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Restore(int id)
+    {
+        var result = await productService.RestoreAsync(id);
+        if (!result.Succeeded)
+        {
+            TempData["ErrorMessage"] = result.ErrorMessage ?? "Unable to restore the product.";
+            return RedirectToAction(nameof(Archived));
+        }
+
+        TempData["SuccessMessage"] = "Product restored successfully.";
         return RedirectToAction(nameof(Admin));
     }
 

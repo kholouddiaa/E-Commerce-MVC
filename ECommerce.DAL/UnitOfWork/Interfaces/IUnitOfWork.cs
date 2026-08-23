@@ -8,5 +8,7 @@ public interface IUnitOfWork : IAsyncDisposable
 
     ICategoryRepository Categories { get; }
 
+    IOrderRepository Orders { get; }
+
     Task<int> SaveChangesAsync();
 }

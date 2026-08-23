@@ -42,6 +42,12 @@ public class ProductService(IUnitOfWork unitOfWork, IMapper mapper, IFileService
         return product is null ? null : mapper.Map<ProductDto>(product);
     }
 
+    public async Task<IReadOnlyList<ProductDto>> GetArchivedAsync()
+    {
+        var products = await unitOfWork.Products.GetDeletedWithCategoryAsync();
+        return mapper.Map<IReadOnlyList<ProductDto>>(products);
+    }
+
     public async Task<ProductUpsertDto?> GetForEditAsync(int id)
     {
         var product = await unitOfWork.Products.GetByIdAsync(id);
@@ -179,11 +185,6 @@ public class ProductService(IUnitOfWork unitOfWork, IMapper mapper, IFileService
             return OperationResult.Failure("The requested product was not found.");
         }
 
-        if (!fileService.DeleteImage(product.ImageUrl))
-        {
-            return OperationResult.Failure("Unable to delete the product image.");
-        }
-
         try
         {
             unitOfWork.Products.Delete(product);
@@ -192,6 +193,28 @@ public class ProductService(IUnitOfWork unitOfWork, IMapper mapper, IFileService
         catch
         {
             return OperationResult.Failure("Unable to delete the product.");
+        }
+
+        return OperationResult.Success();
+    }
+
+    public async Task<OperationResult> RestoreAsync(int id)
+    {
+        var product = await unitOfWork.Products.GetDeletedByIdAsync(id);
+        if (product is null)
+        {
+            return OperationResult.Failure("The archived product was not found.");
+        }
+
+        try
+        {
+            product.IsDeleted = false;
+            unitOfWork.Products.Update(product);
+            await unitOfWork.SaveChangesAsync();
+        }
+        catch
+        {
+            return OperationResult.Failure("Unable to restore the product.");
         }
 
         return OperationResult.Success();

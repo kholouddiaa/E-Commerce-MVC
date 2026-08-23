@@ -15,6 +15,12 @@ public interface IProductRepository : IGenericRepository<Product>
 
     Task<Product?> GetByIdWithCategoryAsync(int id);
 
+    Task<IReadOnlyList<Product>> GetByIdsAsync(IReadOnlyCollection<int> ids);
+
+    Task<IReadOnlyList<Product>> GetDeletedWithCategoryAsync();
+
+    Task<Product?> GetDeletedByIdAsync(int id);
+
     Task<int> GetTotalCountAsync();
 
     Task<IReadOnlyDictionary<int, int>> GetCategoryProductCountsAsync();

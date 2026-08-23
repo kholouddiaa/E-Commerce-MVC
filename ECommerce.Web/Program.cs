@@ -5,6 +5,7 @@ using ECommerce.DAL.Entities;
 using ECommerce.DAL.Extensions;
 using ECommerce.Web.Helpers;
 using ECommerce.Web.Services;
+using ECommerce.Web.Settings;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,6 +24,8 @@ builder.Services.AddSession(options =>
 builder.Services.AddDataAccessServices(builder.Configuration);
 builder.Services.AddBusinessServices();
 builder.Services.AddScoped<IFileService, LocalFileService>();
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection(EmailSettings.SectionName));
+builder.Services.AddScoped<IEmailService, MailKitEmailService>();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
         options.User.RequireUniqueEmail = true;

@@ -100,11 +100,11 @@ public class CategoriesController(ICategoryService categoryService, IProductServ
         var result = await categoryService.DeleteAsync(id);
         if (!result.Succeeded)
         {
-            TempData["ErrorMessage"] = result.ErrorMessage ?? "Unable to delete the category.";
+            TempData["ErrorMessage"] = result.ErrorMessage ?? "Unable to archive the category.";
             return RedirectToAction(nameof(Admin));
         }
 
-        TempData["SuccessMessage"] = "Category deleted successfully.";
+        TempData["SuccessMessage"] = "Category archived successfully.";
         return RedirectToAction(nameof(Admin));
     }
 }

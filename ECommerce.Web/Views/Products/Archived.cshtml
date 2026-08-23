@@ -1,6 +1,6 @@
-@model IReadOnlyList<CategoryDto>
+@model IReadOnlyList<ProductDto>
 @{
-    ViewData["Title"] = "Manage Categories";
+    ViewData["Title"] = "Archived Products";
 }
 
 <div class="container-fluid py-5">
@@ -8,13 +8,12 @@
         <div class="col-12">
             <div class="page-header">
                 <div>
-                    <h1>Manage Categories</h1>
-                    <p class="text-muted mb-0">Keep category CRUD separate from the public storefront page.</p>
+                    <h1>Archived Products</h1>
+                    <p class="text-muted mb-0">Restore products when they should return to the storefront.</p>
                 </div>
                 <div class="dashboard-actions">
-                    <a asp-action="Index" class="btn btn-outline-primary">View Public Categories</a>
-                    <a asp-controller="Products" asp-action="Admin" class="btn btn-outline-secondary">Product Admin</a>
-                    <a asp-action="Create" class="btn btn-primary">Create Category</a>
+                    <a asp-action="Admin" class="btn btn-outline-secondary">Back to Products</a>
+                    <a asp-action="Create" class="btn btn-primary">Create Product</a>
                 </div>
             </div>
 
@@ -23,8 +22,8 @@
                     @if (!Model.Any())
                     {
                         <div class="empty-state">
-                            <p>No categories have been created yet.</p>
-                            <a asp-action="Create" class="btn btn-primary">Create Category</a>
+                            <p>No archived products found.</p>
+                            <a asp-action="Admin" class="btn btn-outline-primary">Back to Products</a>
                         </div>
                     }
                     else
@@ -34,20 +33,25 @@
                                 <thead>
                                     <tr>
                                         <th>Name</th>
-                                        <th>Description</th>
+                                        <th>Category</th>
+                                        <th>Price</th>
+                                        <th>Stock</th>
                                         <th class="table-actions">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var category in Model)
+                                    @foreach (var product in Model)
                                     {
                                         <tr>
-                                            <td>@category.Name</td>
-                                            <td>@(string.IsNullOrWhiteSpace(category.Description) ? "No description provided." : category.Description)</td>
+                                            <td>@product.Name</td>
+                                            <td>@product.CategoryName</td>
+                                            <td>@product.Price.ToString("C")</td>
+                                            <td>@product.StockQuantity</td>
                                             <td class="table-actions">
-                                                <a asp-action="Details" asp-route-id="@category.Id" class="btn btn-sm btn-outline-secondary">Details</a>
-                                                <a asp-action="Edit" asp-route-id="@category.Id" class="btn btn-sm btn-outline-primary">Edit</a>
-                                                <a asp-action="Delete" asp-route-id="@category.Id" class="btn btn-sm btn-outline-danger">Archive</a>
+                                                <form asp-action="Restore" method="post" class="d-inline">
+                                                    <input type="hidden" name="id" value="@product.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-primary">Restore</button>
+                                                </form>
                                             </td>
                                         </tr>
                                     }

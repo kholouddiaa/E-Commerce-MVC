@@ -17,8 +17,9 @@
         && string.Equals(currentAction, "Index", StringComparison.OrdinalIgnoreCase);
     var isCart = string.Equals(currentController, "Cart", StringComparison.OrdinalIgnoreCase);
     var isUserManagement = string.Equals(currentController, "UserManagement", StringComparison.OrdinalIgnoreCase);
+    var isAdminOrders = string.Equals(currentController, "AdminOrders", StringComparison.OrdinalIgnoreCase);
     var isProductAdmin = string.Equals(currentController, "Products", StringComparison.OrdinalIgnoreCase)
-        && new[] { "Admin", "Create", "Edit", "Delete" }
+        && new[] { "Admin", "Archived", "Create", "Edit", "Delete" }
             .Any(action => string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase));
     var isCategoryAdmin = string.Equals(currentController, "Categories", StringComparison.OrdinalIgnoreCase)
         && new[] { "Admin", "Create", "Edit", "Delete", "Details" }
@@ -127,6 +128,7 @@
                             {
                                 <a asp-controller="Products" asp-action="Admin" class="nav-item nav-link @(isProductAdmin ? "active" : string.Empty)">Manage Products</a>
                                 <a asp-controller="Categories" asp-action="Admin" class="nav-item nav-link @(isCategoryAdmin ? "active" : string.Empty)">Manage Categories</a>
+                                <a asp-controller="AdminOrders" asp-action="Index" class="nav-item nav-link @(isAdminOrders ? "active" : string.Empty)">Manage Orders</a>
                                 <a asp-controller="UserManagement" asp-action="Index" class="nav-item nav-link @(isUserManagement ? "active" : string.Empty)">User Management</a>
                             }
                         </div>
@@ -139,6 +141,7 @@
 
                             @if (User.Identity?.IsAuthenticated == true)
                             {
+                                <a asp-controller="Orders" asp-action="Index" class="nav-item nav-link">My Orders</a>
                                 <span class="nav-item nav-link text-muted">Hello, @User.Identity.Name</span>
                                 <form asp-controller="Account" asp-action="Logout" method="post" class="d-flex align-items-center">
                                     <button type="submit" class="btn btn-link nav-item nav-link border-0 p-0">Logout</button>

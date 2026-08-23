@@ -102,6 +102,7 @@
                     <div class="card-footer border-secondary bg-transparent">
                         <div class="d-flex flex-column">
                             <a asp-controller="Products" asp-action="Index" class="btn btn-block btn-outline-primary my-2">Continue Shopping</a>
+                            <a asp-controller="Orders" asp-action="Checkout" class="btn btn-block btn-primary my-2">Proceed to Checkout</a>
                             <form asp-controller="Cart" asp-action="Clear" method="post">
                                 <button type="submit" class="btn btn-block btn-primary my-2">Clear Cart</button>
                             </form>

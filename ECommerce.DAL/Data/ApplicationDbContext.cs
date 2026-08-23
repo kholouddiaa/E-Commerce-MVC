@@ -10,46 +10,43 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<Category> Categories => Set<Category>();
 
+    public DbSet<Order> Orders => Set<Order>();
+
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+    }
 
-        modelBuilder.Entity<ApplicationUser>(entity =>
+    public override int SaveChanges()
+    {
+        UpdateAuditFields();
+        return base.SaveChanges();
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        UpdateAuditFields();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void UpdateAuditFields()
+    {
+        var now = DateTime.UtcNow;
+
+        foreach (var entry in ChangeTracker.Entries<BaseEntity>())
         {
-            entity.Property(user => user.FullName)
-                .IsRequired()
-                .HasMaxLength(150);
-        });
-
-        modelBuilder.Entity<Category>(entity =>
-        {
-            entity.Property(category => category.Name)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            entity.Property(category => category.Description)
-                .HasMaxLength(500);
-        });
-
-        modelBuilder.Entity<Product>(entity =>
-        {
-            entity.Property(product => product.Name)
-                .IsRequired()
-                .HasMaxLength(150);
-
-            entity.Property(product => product.Description)
-                .HasMaxLength(1000);
-
-            entity.Property(product => product.ImageUrl)
-                .HasMaxLength(500);
-
-            entity.Property(product => product.Price)
-                .HasPrecision(18, 2);
-
-            entity.HasOne(product => product.Category)
-                .WithMany(category => category.Products)
-                .HasForeignKey(product => product.CategoryId)
-                .OnDelete(DeleteBehavior.Restrict);
-        });
+            if (entry.State == EntityState.Added)
+            {
+                entry.Entity.CreatedAt = now;
+                entry.Entity.UpdatedAt = now;
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                entry.Entity.UpdatedAt = now;
+            }
+        }
     }
 }

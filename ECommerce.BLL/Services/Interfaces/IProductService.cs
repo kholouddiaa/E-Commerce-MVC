@@ -12,6 +12,8 @@ public interface IProductService
 
     Task<ProductDto?> GetByIdAsync(int id);
 
+    Task<IReadOnlyList<ProductDto>> GetArchivedAsync();
+
     Task<ProductUpsertDto?> GetForEditAsync(int id);
 
     Task<int> GetTotalCountAsync();
@@ -23,4 +25,6 @@ public interface IProductService
     Task<OperationResult> UpdateAsync(ProductUpsertDto productDto, IFormFile? imageFile);
 
     Task<OperationResult> DeleteAsync(int id);
+
+    Task<OperationResult> RestoreAsync(int id);
 }
