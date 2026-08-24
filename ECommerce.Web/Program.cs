@@ -25,6 +25,7 @@ builder.Services.AddDataAccessServices(builder.Configuration);
 builder.Services.AddBusinessServices();
 builder.Services.AddScoped<IFileService, LocalFileService>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection(EmailSettings.SectionName));
+builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection(StripeSettings.SectionName));
 builder.Services.AddScoped<IEmailService, MailKitEmailService>();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     {

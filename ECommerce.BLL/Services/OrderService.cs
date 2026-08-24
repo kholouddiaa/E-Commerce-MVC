@@ -17,32 +17,30 @@ public class OrderService(
     IEmailService emailService,
     ILogger<OrderService> logger) : IOrderService
 {
-    public async Task<OperationResult> CheckoutAsync(string userId, string deliveryAddress, string phone)
+    public async Task<decimal?> GetCheckoutTotalAsync()
     {
-        var cartItems = cartService.GetCart();
-        if (cartItems.Count == 0)
+        var checkoutData = await GetCheckoutDataAsync();
+        return checkoutData?.TotalAmount;
+    }
+
+    public async Task<OperationResult> FinalizeCheckoutAsync(
+        string userId,
+        string deliveryAddress,
+        string phone,
+        decimal expectedTotal,
+        string? paymentIntentId)
+    {
+        var checkoutData = await GetCheckoutDataAsync();
+        if (checkoutData is null)
         {
-            return OperationResult.Failure("Your cart is empty.");
+            return OperationResult.Failure("Your cart contains an invalid or unavailable item.");
         }
 
-        var productIds = cartItems
-            .Where(item => item.ProductId > 0 && item.Quantity > 0)
-            .Select(item => item.ProductId)
-            .Distinct()
-            .ToList();
-
-        if (productIds.Count != cartItems.Count)
+        if (checkoutData.TotalAmount != expectedTotal)
         {
-            return OperationResult.Failure("Your cart contains an invalid item.");
+            return OperationResult.Failure("Your cart changed before payment could be completed. Please try again.");
         }
 
-        var products = await unitOfWork.Products.GetByIdsAsync(productIds);
-        if (products.Count != productIds.Count)
-        {
-            return OperationResult.Failure("One or more products in your cart are no longer available.");
-        }
-
-        var productsById = products.ToDictionary(product => product.Id);
         var order = new Order
         {
             UserId = userId,
@@ -52,9 +50,9 @@ public class OrderService(
             Status = "Paid"
         };
 
-        foreach (var cartItem in cartItems)
+        foreach (var cartItem in checkoutData.CartItems)
         {
-            var product = productsById[cartItem.ProductId];
+            var product = checkoutData.ProductsById[cartItem.ProductId];
             order.Items.Add(new OrderItem
             {
                 ProductId = product.Id,
@@ -64,7 +62,7 @@ public class OrderService(
             });
         }
 
-        order.TotalAmount = order.Items.Sum(item => item.UnitPrice * item.Quantity);
+        order.TotalAmount = checkoutData.TotalAmount;
 
         try
         {
@@ -77,7 +75,7 @@ public class OrderService(
         }
 
         cartService.ClearCart();
-        await SendOrderConfirmationAsync(order);
+        await SendOrderConfirmationAsync(order, paymentIntentId);
         return OperationResult.Success();
     }
 
@@ -142,7 +140,37 @@ public class OrderService(
         };
     }
 
-    private async Task SendOrderConfirmationAsync(Order order)
+    private async Task<CheckoutData?> GetCheckoutDataAsync()
+    {
+        var cartItems = cartService.GetCart();
+        if (cartItems.Count == 0)
+        {
+            return null;
+        }
+
+        var productIds = cartItems
+            .Where(item => item.ProductId > 0 && item.Quantity > 0)
+            .Select(item => item.ProductId)
+            .Distinct()
+            .ToList();
+
+        if (productIds.Count != cartItems.Count)
+        {
+            return null;
+        }
+
+        var products = await unitOfWork.Products.GetByIdsAsync(productIds);
+        if (products.Count != productIds.Count)
+        {
+            return null;
+        }
+
+        var productsById = products.ToDictionary(product => product.Id);
+        var totalAmount = cartItems.Sum(item => productsById[item.ProductId].Price * item.Quantity);
+        return new CheckoutData(cartItems, productsById, totalAmount);
+    }
+
+    private async Task SendOrderConfirmationAsync(Order order, string? paymentIntentId)
     {
         try
         {
@@ -152,7 +180,7 @@ public class OrderService(
                 return;
             }
 
-            var emailBody = BuildOrderConfirmationEmail(order);
+            var emailBody = BuildOrderConfirmationEmail(order, paymentIntentId);
             await emailService.SendHtmlEmailAsync(user.Email, $"Order #{order.Id} Confirmation", emailBody);
         }
         catch (Exception exception)
@@ -161,7 +189,7 @@ public class OrderService(
         }
     }
 
-    private static string BuildOrderConfirmationEmail(Order order)
+    private static string BuildOrderConfirmationEmail(Order order, string? paymentIntentId)
     {
         var items = new StringBuilder();
         foreach (var item in order.Items)
@@ -173,9 +201,18 @@ public class OrderService(
             .Replace("\r\n", "<br />")
             .Replace("\n", "<br />");
 
+        var paymentReference = string.IsNullOrWhiteSpace(paymentIntentId)
+            ? string.Empty
+            : $"<br /><strong>Payment Reference:</strong> {EmailTemplate.Encode(paymentIntentId)}";
+
         return EmailTemplate.Create(
             "Order Confirmation",
             "Your Order Is Confirmed",
-            $"<p>Thank you for your order.</p><p><strong>Order:</strong> #{order.Id}<br /><strong>Date:</strong> {order.OrderDate.ToLocalTime():f}<br /><strong>Delivery Address:</strong><br />{deliveryAddress}</p><table style=\"width:100%;border-collapse:collapse;\"><thead><tr><th style=\"text-align:left;padding:8px;border-bottom:2px solid #e1e5e8;\">Product</th><th style=\"text-align:left;padding:8px;border-bottom:2px solid #e1e5e8;\">Quantity</th><th style=\"text-align:left;padding:8px;border-bottom:2px solid #e1e5e8;\">Unit Price</th></tr></thead><tbody>{items}</tbody></table><p style=\"text-align:right;\"><strong>Total: {order.TotalAmount:C}</strong></p>");
+            $"<p>Thank you for your order.</p><p><strong>Order:</strong> #{order.Id}<br /><strong>Payment Status:</strong> {EmailTemplate.Encode(order.Status)}<br /><strong>Payment Method:</strong> Stripe{paymentReference}<br /><strong>Order Date:</strong> {order.OrderDate.ToLocalTime():f}<br /><strong>Delivery Address:</strong><br />{deliveryAddress}</p><table style=\"width:100%;border-collapse:collapse;\"><thead><tr><th style=\"text-align:left;padding:8px;border-bottom:2px solid #e1e5e8;\">Product</th><th style=\"text-align:left;padding:8px;border-bottom:2px solid #e1e5e8;\">Quantity</th><th style=\"text-align:left;padding:8px;border-bottom:2px solid #e1e5e8;\">Unit Price</th></tr></thead><tbody>{items}</tbody></table><p style=\"text-align:right;\"><strong>Total Amount: {order.TotalAmount:C}</strong></p>");
     }
+
+    private sealed record CheckoutData(
+        IReadOnlyList<ECommerce.BLL.DTOs.Cart.CartItem> CartItems,
+        IReadOnlyDictionary<int, Product> ProductsById,
+        decimal TotalAmount);
 }

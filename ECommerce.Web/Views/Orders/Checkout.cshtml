@@ -11,7 +11,11 @@
                     <h4 class="font-weight-semi-bold m-0">Delivery Information</h4>
                 </div>
                 <div class="card-body">
-                    <form asp-action="Checkout" method="post">
+                    <form id="payment-form"
+                          asp-action="CreatePaymentIntent"
+                          method="post"
+                          data-complete-url="@Url.Action("CompleteCheckout", "Orders")"
+                          data-publishable-key="@Model.StripePublishableKey">
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                         <div class="form-group">
                             <label asp-for="DeliveryAddress"></label>
@@ -23,7 +27,16 @@
                             <input asp-for="Phone" class="form-control" />
                             <span asp-validation-for="Phone" class="text-danger"></span>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-block">Confirm Order and Pay</button>
+                        <div class="form-group">
+                            <label for="card-element">Card Details</label>
+                            <div id="card-element" class="form-control py-3"></div>
+                            <small id="card-errors" class="text-danger d-block mt-2" role="alert"></small>
+                        </div>
+                        @if (string.IsNullOrWhiteSpace(Model.StripePublishableKey))
+                        {
+                            <p class="text-danger">Online payment is not configured. Please try again later.</p>
+                        }
+                        <button id="submit-button" type="submit" class="btn btn-primary btn-block" disabled="@string.IsNullOrWhiteSpace(Model.StripePublishableKey)">Confirm Order and Pay</button>
                     </form>
                 </div>
             </div>
@@ -53,4 +66,72 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        (() => {
+            const form = document.getElementById("payment-form");
+            const publishableKey = form.dataset.publishableKey;
+            const cardErrors = document.getElementById("card-errors");
+            const submitButton = document.getElementById("submit-button");
+
+            if (!publishableKey || typeof Stripe === "undefined") {
+                return;
+            }
+
+            const stripe = Stripe(publishableKey);
+            const elements = stripe.elements();
+            const card = elements.create("card");
+            card.mount("#card-element");
+
+            card.on("change", event => {
+                cardErrors.textContent = event.error ? event.error.message : "";
+            });
+
+            form.addEventListener("submit", async event => {
+                event.preventDefault();
+                if (!$(form).valid()) {
+                    return;
+                }
+
+                submitButton.disabled = true;
+                cardErrors.textContent = "";
+
+                try {
+                    const createResponse = await fetch(form.action, {
+                        method: "POST",
+                        body: new FormData(form),
+                        credentials: "same-origin"
+                    });
+                    const createResult = await createResponse.json();
+                    if (!createResponse.ok) {
+                        throw new Error(createResult.error || "Unable to start payment.");
+                    }
+
+                    const paymentResult = await stripe.confirmCardPayment(createResult.clientSecret, {
+                        payment_method: { card: card }
+                    });
+                    if (paymentResult.error) {
+                        throw new Error(paymentResult.error.message || "Payment was not successful.");
+                    }
+
+                    const completionData = new FormData(form);
+                    completionData.append("paymentIntentId", paymentResult.paymentIntent.id);
+                    const completeResponse = await fetch(form.dataset.completeUrl, {
+                        method: "POST",
+                        body: completionData,
+                        credentials: "same-origin"
+                    });
+                    const completeResult = await completeResponse.json();
+                    if (!completeResponse.ok) {
+                        throw new Error(completeResult.error || "Payment could not be verified.");
+                    }
+
+                    window.location.assign(completeResult.redirectUrl);
+                } catch (error) {
+                    cardErrors.textContent = error.message || "Payment could not be completed. Please try again.";
+                    submitButton.disabled = false;
+                }
+            });
+        })();
+    </script>
 }

@@ -17,5 +17,7 @@ public class CheckoutViewModel
 
     public IReadOnlyList<CartItem> Items { get; set; } = [];
 
+    public string StripePublishableKey { get; set; } = string.Empty;
+
     public decimal OrderTotal => Items.Sum(item => item.Price * item.Quantity);
 }

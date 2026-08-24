@@ -5,7 +5,14 @@ namespace ECommerce.BLL.Services.Interfaces;
 
 public interface IOrderService
 {
-    Task<OperationResult> CheckoutAsync(string userId, string deliveryAddress, string phone);
+    Task<decimal?> GetCheckoutTotalAsync();
+
+    Task<OperationResult> FinalizeCheckoutAsync(
+        string userId,
+        string deliveryAddress,
+        string phone,
+        decimal expectedTotal,
+        string? paymentIntentId);
 
     Task<IReadOnlyList<OrderSummaryDto>> GetUserOrdersAsync(string userId);
 
